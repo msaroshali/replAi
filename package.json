@@ -1,0 +1,17 @@
+{
+  "name": "gmail-reply-extension",
+  "version": "1.0.0",
+  "description": "An executive, lightweight, and modern Chrome Extension (Manifest V3) that injects a **1-click AI reply assistant** directly into your Gmail formatting & action toolbars (right next to formatting options, Loom, and attachment buttons).",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/background.js --bundle --minify --outfile=background/background.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^2.19.0",
+    "esbuild": "^0.28.2"
+  }
+}

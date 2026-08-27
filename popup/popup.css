@@ -1,0 +1,382 @@
+/* ============================================================
+   SmartReply AI — Professional Extension Popup Styles
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 360px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.popup-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-icon {
+  width: 20px;
+  height: 20px;
+  color: #38bdf8;
+}
+
+.brand-info h1 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #f8fafc;
+}
+
+.brand-info .subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-ready {
+  background: #064e3b;
+  color: #6ee7b7;
+}
+
+.status-ready .status-dot {
+  background: #10b981;
+}
+
+.status-warning {
+  background: #451a03;
+  color: #fcd34d;
+}
+
+.status-warning .status-dot {
+  background: #f59e0b;
+}
+
+/* Content Area */
+.content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.helper-link {
+  font-size: 11px;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.helper-link:hover {
+  text-decoration: underline;
+}
+
+.auto-fallback-tag {
+  font-size: 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  border: 1px solid #bfdbfe;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+input[type="text"],
+input[type="password"],
+.select-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+.select-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.input-wrapper input {
+  padding-right: 32px;
+}
+
+.icon-action-btn {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.icon-action-btn:hover {
+  opacity: 1;
+}
+
+/* Test Button Row */
+.test-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-secondary:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.test-message {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.test-message.success {
+  color: #10b981;
+}
+
+.test-message.error {
+  color: #ef4444;
+}
+
+/* Checkbox Toggle */
+.checkbox-group {
+  padding: 2px 0;
+}
+
+.toggle-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-control input {
+  display: none;
+}
+
+.toggle-track {
+  position: relative;
+  width: 30px;
+  height: 16px;
+  background: #cbd5e1;
+  border-radius: 20px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.15s;
+}
+
+.toggle-control input:checked + .toggle-track {
+  background: #2563eb;
+}
+
+.toggle-control input:checked + .toggle-track::after {
+  transform: translateX(14px);
+}
+
+.toggle-text {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #475569;
+}
+
+/* Primary Button */
+.btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+/* Model Status Info Box */
+.model-info-box {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.model-info-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.model-info-icon {
+  font-size: 12px;
+  color: #2563eb;
+}
+
+.model-info-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.model-info-desc {
+  font-size: 11px;
+  color: #475569;
+  margin-left: 17px;
+}
+
+.model-info-desc strong {
+  color: #0f172a;
+}
+
+/* Guide Card */
+.guide-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 11px;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.guide-title {
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.guide-card p {
+  margin-bottom: 3px;
+}
+
+.guide-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%) translateY(40px);
+  background: #0f172a;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

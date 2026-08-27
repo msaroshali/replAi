@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartReply AI Settings</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
+          <path d="M19 16L20.2 18.8L23 20L20.2 21.2L19 24L17.8 21.2L15 20L17.8 18.8L19 16Z" opacity="0.7"/>
+        </svg>
+        <div class="brand-info">
+          <h1>SmartReply AI</h1>
+          <p class="subtitle">Gmail Executive Assistant</p>
+        </div>
+      </div>
+      <div id="statusBadge" class="status-badge status-warning">
+        <span class="status-dot"></span>
+        <span id="statusText">Needs Key</span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="content">
+      <!-- API Key Section -->
+      <section class="form-group">
+        <div class="label-row">
+          <label for="apiKey">Gemini API Key</label>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="helper-link" title="Get free API key">
+            Get Key (Free) ↗
+          </a>
+        </div>
+        <div class="input-wrapper">
+          <input type="password" id="apiKey" placeholder="Paste your Gemini API key..." autocomplete="off" />
+          <button type="button" id="toggleKeyVisibility" class="icon-action-btn" title="Show/Hide Key">👁️</button>
+        </div>
+        <div class="test-row">
+          <button type="button" id="testKeyBtn" class="btn-secondary">
+            Verify Key
+          </button>
+          <span id="testResult" class="test-message"></span>
+        </div>
+      </section>
+
+      <!-- Primary Model Selector -->
+      <section class="form-group">
+        <div class="label-row">
+          <label for="selectedModel">Primary AI Model</label>
+          <span class="auto-fallback-tag" title="If primary model fails, next model in list takes over automatically">Auto-Fallback Enabled</span>
+        </div>
+        <select id="selectedModel" class="select-input">
+          <option value="gemini-3.1-flash-lite" selected>gemini-3.1-flash-lite (Ultra-Fast & Responsive - Default)</option>
+          <option value="gemini-3.5-flash">gemini-3.5-flash (Highest Quality & Intelligence)</option>
+          <option value="gemini-3-flash-preview">gemini-3-flash-preview (Fast Intelligence Preview)</option>
+          <option value="gemini-2.5-flash">gemini-2.5-flash (Balanced & High Speed)</option>
+          <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (Lightweight)</option>
+          <option value="gemini-1.5-flash">gemini-1.5-flash (Classic Stable)</option>
+        </select>
+      </section>
+
+      <!-- Tone Preference -->
+      <section class="form-group">
+        <label for="defaultTone">Default Tone</label>
+        <select id="defaultTone" class="select-input">
+          <option value="professional" selected>👔 Professional & Concise (Default)</option>
+          <option value="direct">⚡ Direct & Action-Oriented (1-2 sentences)</option>
+          <option value="friendly">🤝 Friendly & Collaborative</option>
+          <option value="formal">📋 Formal & Thorough</option>
+        </select>
+      </section>
+
+      <!-- User Name -->
+      <section class="form-group">
+        <label for="userName">Sign-off Name (Optional)</label>
+        <input type="text" id="userName" placeholder="e.g., Alex" />
+      </section>
+
+      <!-- Emoji Option -->
+      <section class="form-group checkbox-group">
+        <label class="toggle-control">
+          <input type="checkbox" id="useEmoji" />
+          <span class="toggle-track"></span>
+          <span class="toggle-text">Allow subtle emojis in informal replies</span>
+        </label>
+      </section>
+
+      <!-- Save Button -->
+      <button type="button" id="saveBtn" class="btn-primary">
+        Save Settings
+      </button>
+
+      <!-- Last Used Model Status Banner -->
+      <div id="lastModelBox" class="model-info-box">
+        <div class="model-info-header">
+          <span class="model-info-icon">⚡</span>
+          <span class="model-info-title">Active Model Status:</span>
+        </div>
+        <div id="lastModelText" class="model-info-desc">Ready to generate replies</div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="guide-card">
+        <div class="guide-title">How to use in Gmail:</div>
+        <p>1. Open any email in Gmail & click <strong>Reply</strong>.</p>
+        <p>2. In the formatting toolbar (next to attachments & Loom), click <strong>AI Reply</strong>.</p>
+        <p>3. Select an intent (or type custom instructions) to generate your reply.</p>
+      </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Settings saved successfully.</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
