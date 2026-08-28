@@ -1,122 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="teal" data-mode="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartReply AI Settings</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartReply AI settings</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div class="popup-container">
-    <!-- Header -->
+  <div class="popup-shell">
     <header class="header">
       <div class="brand">
-        <svg class="brand-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
-          <path d="M19 16L20.2 18.8L23 20L20.2 21.2L19 24L17.8 21.2L15 20L17.8 18.8L19 16Z" opacity="0.7"/>
-        </svg>
-        <div class="brand-info">
+        <img src="../icons/icon48.png" width="36" height="36" alt="">
+        <div>
           <h1>SmartReply AI</h1>
-          <p class="subtitle">Gmail Executive Assistant</p>
+          <p>Bring your own Gemini key</p>
         </div>
       </div>
       <div id="statusBadge" class="status-badge status-warning">
-        <span class="status-dot"></span>
-        <span id="statusText">Needs Key</span>
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="statusText">Set up</span>
       </div>
     </header>
 
-    <!-- Main Content -->
     <main class="content">
-      <!-- API Key Section -->
-      <section class="form-group">
-        <div class="label-row">
-          <label for="apiKey">Gemini API Key</label>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="helper-link" title="Get free API key">
-            Get Key (Free) ↗
-          </a>
+      <section class="intro-card">
+        <strong>Draft inside Gmail. Decide before inserting.</strong>
+        <p>SmartReply reads the current thread only when you ask for a draft. It never sends email.</p>
+      </section>
+
+      <details class="privacy-card" id="privacyDetails">
+        <summary>
+          <span class="privacy-summary-copy">
+            <span class="section-kicker">Privacy &amp; data sharing</span>
+            <strong id="privacySummaryText">Review required</strong>
+          </span>
+          <span class="privacy-state" id="privacyState">Not accepted</span>
+        </summary>
+        <div class="privacy-body">
+          <label class="consent-row">
+            <input type="checkbox" id="privacyConsentAccepted">
+            <span>I allow SmartReply to send the current email thread and my drafting note directly from this browser to Google Gemini when I request a draft.</span>
+          </label>
+          <p>Your key stays in Chrome local storage. Unchecking this and saving pauses generation; you can enable it again at any time.</p>
         </div>
-        <div class="input-wrapper">
-          <input type="password" id="apiKey" placeholder="Paste your Gemini API key..." autocomplete="off" />
-          <button type="button" id="toggleKeyVisibility" class="icon-action-btn" title="Show/Hide Key">👁️</button>
+      </details>
+
+      <section class="settings-section" aria-labelledby="connectionTitle">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">Connection</div>
+            <h2 id="connectionTitle">Gemini API key</h2>
+          </div>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">Get a key ↗</a>
         </div>
-        <div class="test-row">
-          <button type="button" id="testKeyBtn" class="btn-secondary">
-            Verify Key
+
+        <div class="key-row">
+          <input type="password" id="apiKey" placeholder="Paste your Gemini API key" autocomplete="off" spellcheck="false">
+          <button type="button" id="toggleKeyVisibility" class="icon-button" aria-label="Show API key">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
           </button>
-          <span id="testResult" class="test-message"></span>
+        </div>
+        <div class="verification-row">
+          <span id="testResult" class="test-message info" role="status">Paste a key and it will be checked automatically.</span>
+          <button type="button" id="testKeyBtn" class="button-secondary">Check now</button>
         </div>
       </section>
 
-      <!-- Primary Model Selector -->
-      <section class="form-group">
-        <div class="label-row">
-          <label for="selectedModel">Primary AI Model</label>
-          <span class="auto-fallback-tag" title="If primary model fails, next model in list takes over automatically">Auto-Fallback Enabled</span>
+      <section class="settings-section" aria-labelledby="defaultsTitle">
+        <div class="section-kicker">Draft defaults</div>
+        <h2 id="defaultsTitle">How replies should sound</h2>
+
+        <div class="field-grid">
+          <label>Tone
+            <select id="defaultTone">
+              <option value="professional">Professional</option>
+              <option value="direct">Direct</option>
+              <option value="friendly">Friendly</option>
+              <option value="formal">Formal</option>
+            </select>
+          </label>
+          <label>Length
+            <select id="defaultLength">
+              <option value="short">Short</option>
+              <option value="medium" selected>Medium</option>
+              <option value="detailed">Detailed</option>
+            </select>
+          </label>
         </div>
-        <select id="selectedModel" class="select-input">
-          <option value="gemini-3.1-flash-lite" selected>gemini-3.1-flash-lite (Ultra-Fast & Responsive - Default)</option>
-          <option value="gemini-3.5-flash">gemini-3.5-flash (Highest Quality & Intelligence)</option>
-          <option value="gemini-3-flash-preview">gemini-3-flash-preview (Fast Intelligence Preview)</option>
-          <option value="gemini-2.5-flash">gemini-2.5-flash (Balanced & High Speed)</option>
-          <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (Lightweight)</option>
-          <option value="gemini-1.5-flash">gemini-1.5-flash (Classic Stable)</option>
-        </select>
-      </section>
 
-      <!-- Tone Preference -->
-      <section class="form-group">
-        <label for="defaultTone">Default Tone</label>
-        <select id="defaultTone" class="select-input">
-          <option value="professional" selected>👔 Professional & Concise (Default)</option>
-          <option value="direct">⚡ Direct & Action-Oriented (1-2 sentences)</option>
-          <option value="friendly">🤝 Friendly & Collaborative</option>
-          <option value="formal">📋 Formal & Thorough</option>
-        </select>
-      </section>
+        <label class="field-label">Sign-off name <span>Optional</span>
+          <input type="text" id="userName" maxlength="80" placeholder="e.g. Alex">
+        </label>
 
-      <!-- User Name -->
-      <section class="form-group">
-        <label for="userName">Sign-off Name (Optional)</label>
-        <input type="text" id="userName" placeholder="e.g., Alex" />
-      </section>
-
-      <!-- Emoji Option -->
-      <section class="form-group checkbox-group">
-        <label class="toggle-control">
-          <input type="checkbox" id="useEmoji" />
-          <span class="toggle-track"></span>
-          <span class="toggle-text">Allow subtle emojis in informal replies</span>
+        <label class="toggle-row">
+          <input type="checkbox" id="useEmoji">
+          <span class="toggle-track" aria-hidden="true"></span>
+          <span>Allow one subtle emoji when it fits</span>
         </label>
       </section>
 
-      <!-- Save Button -->
-      <button type="button" id="saveBtn" class="btn-primary">
-        Save Settings
-      </button>
-
-      <!-- Last Used Model Status Banner -->
-      <div id="lastModelBox" class="model-info-box">
-        <div class="model-info-header">
-          <span class="model-info-icon">⚡</span>
-          <span class="model-info-title">Active Model Status:</span>
+      <section class="settings-section appearance-section" aria-labelledby="appearanceTitle">
+        <div class="section-kicker">Appearance</div>
+        <h2 id="appearanceTitle">Make it feel like yours</h2>
+        <div class="field-grid">
+          <label>Color theme
+            <select id="colorTheme">
+              <option value="teal">Teal</option>
+              <option value="rose">Rose</option>
+            </select>
+          </label>
+          <label>Mode
+            <select id="appearanceMode">
+              <option value="system">Follow system</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </label>
         </div>
-        <div id="lastModelText" class="model-info-desc">Ready to generate replies</div>
-      </div>
+        <div class="theme-preview" aria-hidden="true"><span></span><span></span><span></span><em>Live preview</em></div>
+      </section>
 
-      <!-- Instructions -->
-      <div class="guide-card">
-        <div class="guide-title">How to use in Gmail:</div>
-        <p>1. Open any email in Gmail & click <strong>Reply</strong>.</p>
-        <p>2. In the formatting toolbar (next to attachments & Loom), click <strong>AI Reply</strong>.</p>
-        <p>3. Select an intent (or type custom instructions) to generate your reply.</p>
+      <details class="advanced-section">
+        <summary>Advanced model settings</summary>
+        <label class="field-label">Primary model
+          <select id="selectedModel">
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite — default</option>
+            <option value="gemini-3.7-flash">Gemini 3.7 Flash — highest quality</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash — balanced</option>
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash — legacy stable</option>
+            <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          </select>
+        </label>
+        <p>SmartReply falls back only when a model is unavailable or rate-limited.</p>
+      </details>
+
+      <button type="button" id="saveBtn" class="button-primary">Save settings</button>
+
+      <div class="usage-note">
+        <span>In Gmail: open Reply → click the SmartReply mark → review a draft → insert.</span>
+        <span id="lastModelText"></span>
       </div>
     </main>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast">Settings saved successfully.</div>
+    <div id="toast" class="toast" role="status"></div>
   </div>
-
   <script src="popup.js"></script>
 </body>
 </html>

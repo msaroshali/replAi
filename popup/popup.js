@@ -1,191 +1,284 @@
-/**
- * SmartReply AI — Professional Settings Popup Script
- */
-
-const ORDERED_MODELS = [
-  'gemini-3.1-flash-lite',
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
+const SUPPORTED_MODELS = new Set([
+  'gemini-3.5-flash-lite',
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
   'gemini-3.5-flash',
-  'gemini-3-flash-preview',
-  'gemini-2.5-flash',
+  'gemini-3.1-flash-lite',
   'gemini-2.5-flash-lite',
-  'gemini-1.5-flash'
-];
+  'gemini-2.5-flash'
+]);
+const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   const apiKeyInput = document.getElementById('apiKey');
-  const toggleKeyBtn = document.getElementById('toggleKeyVisibility');
-  const testKeyBtn = document.getElementById('testKeyBtn');
+  const toggleKeyButton = document.getElementById('toggleKeyVisibility');
+  const testKeyButton = document.getElementById('testKeyBtn');
   const testResult = document.getElementById('testResult');
-  const defaultToneSelect = document.getElementById('defaultTone');
+  const toneSelect = document.getElementById('defaultTone');
+  const lengthSelect = document.getElementById('defaultLength');
   const userNameInput = document.getElementById('userName');
-  const selectedModelSelect = document.getElementById('selectedModel');
-  const useEmojiCheckbox = document.getElementById('useEmoji');
-  const saveBtn = document.getElementById('saveBtn');
+  const modelSelect = document.getElementById('selectedModel');
+  const emojiCheckbox = document.getElementById('useEmoji');
+  const consentCheckbox = document.getElementById('privacyConsentAccepted');
+  const privacyDetails = document.getElementById('privacyDetails');
+  const privacySummaryText = document.getElementById('privacySummaryText');
+  const privacyState = document.getElementById('privacyState');
+  const colorThemeSelect = document.getElementById('colorTheme');
+  const appearanceModeSelect = document.getElementById('appearanceMode');
+  const saveButton = document.getElementById('saveBtn');
   const statusBadge = document.getElementById('statusBadge');
   const statusText = document.getElementById('statusText');
   const lastModelText = document.getElementById('lastModelText');
   const toast = document.getElementById('toast');
 
-  // Load saved settings
+  let verificationTimer = 0;
+  let verificationRequestId = 0;
+  let verificationState = 'idle';
+  let verifiedSignature = '';
+
   chrome.storage.local.get([
     'geminiApiKey',
     'defaultTone',
+    'defaultLength',
     'userName',
     'selectedModel',
     'useEmoji',
-    'lastUsedModel',
-    'lastUsedTime'
-  ], (res) => {
-    if (res.geminiApiKey) {
-      apiKeyInput.value = res.geminiApiKey;
-      updateStatusBadge(true);
-    } else {
-      updateStatusBadge(false);
+    'privacyConsentAccepted',
+    'colorTheme',
+    'appearanceMode',
+    'apiKeyVerified',
+    'verifiedModel',
+    'lastUsedModel'
+  ], (saved) => {
+    apiKeyInput.value = saved.geminiApiKey || '';
+    toneSelect.value = saved.defaultTone || 'professional';
+    lengthSelect.value = saved.defaultLength || 'medium';
+    userNameInput.value = saved.userName || '';
+    modelSelect.value = SUPPORTED_MODELS.has(saved.selectedModel) ? saved.selectedModel : DEFAULT_MODEL;
+    emojiCheckbox.checked = saved.useEmoji === true;
+    consentCheckbox.checked = saved.privacyConsentAccepted === true;
+    colorThemeSelect.value = saved.colorTheme === 'rose' ? 'rose' : 'teal';
+    appearanceModeSelect.value = ['light', 'dark', 'system'].includes(saved.appearanceMode) ? saved.appearanceMode : 'system';
+
+    applyAppearance();
+    updateConsentSummary();
+    privacyDetails.open = !consentCheckbox.checked;
+
+    if (saved.apiKeyVerified === true && saved.verifiedModel === modelSelect.value && apiKeyInput.value.trim()) {
+      verifiedSignature = currentKeySignature();
+      verificationState = 'success';
+      showTestResult('success', `Saved key verified with ${modelSelect.value}.`);
+    } else if (apiKeyInput.value.trim()) {
+      queueKeyVerification(350);
     }
 
-    if (res.defaultTone) defaultToneSelect.value = res.defaultTone;
-    if (res.userName) userNameInput.value = res.userName;
-    if (res.selectedModel) selectedModelSelect.value = res.selectedModel;
-    if (res.useEmoji !== undefined) useEmojiCheckbox.checked = res.useEmoji;
-
-    if (res.lastUsedModel) {
-      lastModelText.innerHTML = `Last generated with: <strong>${res.lastUsedModel}</strong> ${res.lastUsedTime ? '(' + res.lastUsedTime + ')' : ''}`;
-    } else {
-      lastModelText.textContent = `Primary model: ${selectedModelSelect.value} (Auto-fallback enabled)`;
-    }
+    updateStatus();
+    lastModelText.textContent = saved.lastUsedModel
+      ? `Last successful model: ${saved.lastUsedModel}`
+      : 'No drafts generated yet.';
   });
 
-  // Toggle API key visibility
-  toggleKeyBtn.addEventListener('click', () => {
-    if (apiKeyInput.type === 'password') {
-      apiKeyInput.type = 'text';
-      toggleKeyBtn.textContent = '🔒';
-    } else {
-      apiKeyInput.type = 'password';
-      toggleKeyBtn.textContent = '👁️';
-    }
+  toggleKeyButton.addEventListener('click', () => {
+    const showing = apiKeyInput.type === 'text';
+    apiKeyInput.type = showing ? 'password' : 'text';
+    toggleKeyButton.setAttribute('aria-label', showing ? 'Show API key' : 'Hide API key');
   });
 
-  // Fast Verification using the exact supported model chain
-  testKeyBtn.addEventListener('click', async () => {
+  apiKeyInput.addEventListener('input', (event) => {
+    window.clearTimeout(verificationTimer);
+    verificationRequestId += 1;
+    verificationState = 'idle';
+    verifiedSignature = '';
+    testKeyButton.disabled = false;
+    testKeyButton.textContent = 'Check now';
+
     const key = apiKeyInput.value.trim();
     if (!key) {
-      showTestResult(false, 'Enter an API key first.');
-      return;
-    }
-
-    testResult.textContent = 'Verifying... ⚡';
-    testResult.className = 'test-message';
-    testKeyBtn.disabled = true;
-
-    const testModels = [
-      selectedModelSelect.value,
-      'gemini-3-flash-preview',
-      'gemini-3.5-flash',
-      'gemini-3.1-flash-lite',
-      'gemini-2.5-flash',
-      'gemini-2.5-flash-lite',
-      'gemini-1.5-flash'
-    ];
-    const uniqueTestModels = [...new Set(testModels.filter(Boolean))];
-
-    let verifiedModel = null;
-    let errorMsg = 'Key verification failed';
-
-    for (const model of uniqueTestModels) {
-      try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: 'Hi' }] }],
-            generationConfig: { maxOutputTokens: 2 }
-          }),
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          verifiedModel = model;
-          break;
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          const msg = errData.error?.message || `HTTP ${res.status}`;
-          if (res.status === 400 && msg.includes('API_KEY_INVALID')) {
-            errorMsg = 'Invalid API key';
-            break;
-          }
-          errorMsg = msg;
-        }
-      } catch (err) {
-        errorMsg = err.name === 'AbortError' ? 'Timeout' : (err.message || 'Error');
-      }
-    }
-
-    testKeyBtn.disabled = false;
-
-    if (verifiedModel) {
-      showTestResult(true, `✓ Key Verified (${verifiedModel})!`);
-      updateStatusBadge(true);
-      lastModelText.innerHTML = `Verified with: <strong>${verifiedModel}</strong>`;
-      // Automatically save the verified key immediately
-      chrome.storage.local.set({
-        geminiApiKey: key,
-        lastUsedModel: verifiedModel,
-        selectedModel: selectedModelSelect.value || verifiedModel
-      });
+      showTestResult('info', 'Paste a key and it will be checked automatically.');
+    } else if (key.length < 16) {
+      showTestResult('info', 'Waiting for the complete key…');
     } else {
-      showTestResult(false, `✕ ${errorMsg.substring(0, 30)}`);
-      updateStatusBadge(false);
+      queueKeyVerification(event.inputType === 'insertFromPaste' ? 120 : 650);
     }
+    updateStatus();
   });
 
-  // Save Settings
-  saveBtn.addEventListener('click', () => {
-    const apiKey = apiKeyInput.value.trim();
-    const defaultTone = defaultToneSelect.value;
-    const userName = userNameInput.value.trim();
-    const selectedModel = selectedModelSelect.value;
-    const useEmoji = useEmojiCheckbox.checked;
+  modelSelect.addEventListener('change', () => {
+    verifiedSignature = '';
+    verificationState = 'idle';
+    if (apiKeyInput.value.trim().length >= 16) queueKeyVerification(250);
+    updateStatus();
+  });
 
-    chrome.storage.local.set({
-      geminiApiKey: apiKey,
-      defaultTone,
-      userName,
-      selectedModel,
-      useEmoji
-    }, () => {
-      updateStatusBadge(Boolean(apiKey));
-      lastModelText.innerHTML = `Primary model: <strong>${selectedModel}</strong> (Auto-fallback enabled)`;
-      showToast('Settings saved!');
+  consentCheckbox.addEventListener('change', () => {
+    updateConsentSummary();
+    updateStatus();
+  });
+
+  colorThemeSelect.addEventListener('change', applyAppearance);
+  appearanceModeSelect.addEventListener('change', applyAppearance);
+  systemDarkQuery.addEventListener('change', () => {
+    if (appearanceModeSelect.value === 'system') applyAppearance();
+  });
+
+  testKeyButton.addEventListener('click', verifyKey);
+
+  saveButton.addEventListener('click', () => {
+    const signature = currentKeySignature();
+    const keyIsVerified = Boolean(signature) && verifiedSignature === signature;
+    const settings = {
+      geminiApiKey: apiKeyInput.value.trim(),
+      defaultTone: toneSelect.value,
+      defaultLength: lengthSelect.value,
+      userName: userNameInput.value.trim(),
+      selectedModel: modelSelect.value || DEFAULT_MODEL,
+      useEmoji: emojiCheckbox.checked,
+      privacyConsentAccepted: consentCheckbox.checked,
+      colorTheme: colorThemeSelect.value === 'rose' ? 'rose' : 'teal',
+      appearanceMode: ['light', 'dark', 'system'].includes(appearanceModeSelect.value) ? appearanceModeSelect.value : 'system',
+      apiKeyVerified: keyIsVerified,
+      verifiedModel: keyIsVerified ? modelSelect.value : ''
+    };
+
+    chrome.storage.local.set(settings, () => {
+      updateConsentSummary();
+      privacyDetails.open = !settings.privacyConsentAccepted;
+      updateStatus();
+
+      if (!settings.privacyConsentAccepted) {
+        showToast('Settings saved. SmartReply is paused until data sharing is enabled.');
+      } else if (!settings.geminiApiKey) {
+        showToast('Preferences saved. Add a Gemini key to start.');
+      } else if (keyIsVerified) {
+        showToast('Settings saved. SmartReply is ready.');
+      } else {
+        showToast('Settings saved. The key still needs a successful check.');
+      }
     });
   });
 
-  function updateStatusBadge(hasKey) {
-    if (hasKey) {
-      statusBadge.className = 'status-badge status-ready';
-      statusText.textContent = 'Active';
+  function queueKeyVerification(delay) {
+    window.clearTimeout(verificationTimer);
+    verificationState = 'waiting';
+    showTestResult('checking', 'Checking the key automatically…');
+    updateStatus();
+    verificationTimer = window.setTimeout(verifyKey, delay);
+  }
+
+  function verifyKey() {
+    window.clearTimeout(verificationTimer);
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) {
+      verificationState = 'idle';
+      showTestResult('info', 'Paste a key and it will be checked automatically.');
+      updateStatus();
+      return;
+    }
+    if (apiKey.length < 16) {
+      verificationState = 'idle';
+      showTestResult('info', 'Waiting for the complete key…');
+      updateStatus();
+      return;
+    }
+
+    const signature = currentKeySignature();
+    const requestId = ++verificationRequestId;
+    verificationState = 'checking';
+    testKeyButton.disabled = true;
+    testKeyButton.textContent = 'Checking…';
+    showTestResult('checking', 'Connecting to Gemini…');
+    updateStatus();
+
+    chrome.runtime.sendMessage({
+      action: 'TEST_API_KEY',
+      apiKey,
+      model: modelSelect.value
+    }, (response) => {
+      if (requestId !== verificationRequestId || signature !== currentKeySignature()) return;
+
+      testKeyButton.disabled = false;
+      testKeyButton.textContent = 'Check now';
+
+      if (chrome.runtime.lastError) {
+        verificationState = 'error';
+        verifiedSignature = '';
+        showTestResult('error', 'Extension disconnected. Reload it and retry.');
+      } else if (response?.success) {
+        verificationState = 'success';
+        verifiedSignature = signature;
+        showTestResult('success', `Connected with ${response.workingModel}.`);
+      } else {
+        verificationState = 'error';
+        verifiedSignature = '';
+        showTestResult('error', response?.error || 'Connection failed.');
+      }
+      updateStatus();
+    });
+  }
+
+  function currentKeySignature() {
+    const key = apiKeyInput.value.trim();
+    return key ? `${key}\n${modelSelect.value || DEFAULT_MODEL}` : '';
+  }
+
+  function applyAppearance() {
+    const theme = colorThemeSelect.value === 'rose' ? 'rose' : 'teal';
+    const preference = ['light', 'dark', 'system'].includes(appearanceModeSelect.value)
+      ? appearanceModeSelect.value
+      : 'system';
+    const resolvedMode = preference === 'system'
+      ? (systemDarkQuery.matches ? 'dark' : 'light')
+      : preference;
+
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.mode = resolvedMode;
+  }
+
+  function updateConsentSummary() {
+    if (consentCheckbox.checked) {
+      privacySummaryText.textContent = 'Data sharing accepted';
+      privacyState.textContent = 'Enabled';
+      privacyState.className = 'privacy-state privacy-state-enabled';
     } else {
-      statusBadge.className = 'status-badge status-warning';
-      statusText.textContent = 'Needs Key';
+      privacySummaryText.textContent = 'Generation is paused';
+      privacyState.textContent = 'Paused';
+      privacyState.className = 'privacy-state privacy-state-paused';
     }
   }
 
-  function showTestResult(isSuccess, msg) {
-    testResult.textContent = msg;
-    testResult.className = `test-message ${isSuccess ? 'success' : 'error'}`;
+  function updateStatus() {
+    const hasKey = Boolean(apiKeyInput.value.trim());
+    let statusClass = 'status-warning';
+    let label = 'Set up';
+
+    if (hasKey && !consentCheckbox.checked) {
+      statusClass = 'status-paused';
+      label = 'Paused';
+    } else if (hasKey && ['waiting', 'checking'].includes(verificationState)) {
+      statusClass = 'status-checking';
+      label = 'Checking';
+    } else if (hasKey && consentCheckbox.checked && verifiedSignature === currentKeySignature()) {
+      statusClass = 'status-ready';
+      label = 'Ready';
+    } else if (hasKey && verificationState === 'error') {
+      label = 'Key issue';
+    } else if (hasKey && consentCheckbox.checked) {
+      label = 'Check key';
+    }
+
+    statusBadge.className = `status-badge ${statusClass}`;
+    statusText.textContent = label;
   }
 
-  function showToast(msg) {
-    toast.textContent = msg;
+  function showTestResult(kind, message) {
+    testResult.className = `test-message ${kind}`;
+    testResult.textContent = String(message).slice(0, 130);
+  }
+
+  function showToast(message) {
+    toast.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => {
-      toast.classList.remove('show');
-    }, 2000);
+    window.setTimeout(() => toast.classList.remove('show'), 3000);
   }
 });

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">SmartReply AI</title>
+  <desc id="desc">A white reply card and return mark on a teal rounded square.</desc>
+  <rect x="12" y="12" width="104" height="104" rx="31" fill="#0f6a6d"/>
+  <path d="M37 34h54a14 14 0 0 1 14 14v32a14 14 0 0 1-14 14H64L43 109V94h-6a14 14 0 0 1-14-14V48a14 14 0 0 1 14-14Z" fill="#fff"/>
+  <path d="M42 52h41M42 64h29" fill="none" stroke="#0f6a6d" stroke-width="6" stroke-linecap="round"/>
+  <path d="M87 79H62" fill="none" stroke="#0f6a6d" stroke-width="6" stroke-linecap="round"/>
+  <path d="m66 69-13 10 13 10Z" fill="#0f6a6d"/>
+</svg>

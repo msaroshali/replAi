@@ -1,353 +1,499 @@
-/* ============================================================
-   SmartReply AI — Professional Gmail Injected Styles (v3)
-   ============================================================ */
+.smartreply-circle-btn,
+.smartreply-popover {
+  --smartreply-accent: #0f6a6d;
+  --smartreply-accent-strong: #0a5154;
+  --smartreply-accent-text: #0f6a6d;
+  --smartreply-accent-soft: #e8f4f3;
+  --smartreply-accent-rgb: 15 106 109;
+  --smartreply-surface: #ffffff;
+  --smartreply-surface-alt: #fbfcfb;
+  --smartreply-field: #ffffff;
+  --smartreply-preview-bg: #f7f8f6;
+  --smartreply-ink: #172323;
+  --smartreply-copy: #263332;
+  --smartreply-muted: #657271;
+  --smartreply-line: #dce4e2;
+  --smartreply-field-line: #cfdad8;
+  --smartreply-hover: #f2f8f7;
+  --smartreply-overlay: rgba(252, 253, 252, 0.96);
+  --smartreply-error: #8f2f2f;
+  --smartreply-error-bg: #fff5f4;
+  --smartreply-error-line: #efc9c4;
+  --smartreply-button-bg: #f3f9f8;
+  --smartreply-button-hover: #e4f2f1;
+  --smartreply-button-line: #bad3d2;
+}
 
-/* 1. In-Toolbar Button Wrapper */
+.smartreply-circle-btn[data-smartreply-theme="rose"],
+.smartreply-popover[data-smartreply-theme="rose"] {
+  --smartreply-accent: #b64d78;
+  --smartreply-accent-strong: #893455;
+  --smartreply-accent-text: #b64d78;
+  --smartreply-accent-soft: #f9e8ef;
+  --smartreply-accent-rgb: 182 77 120;
+  --smartreply-hover: #fff3f7;
+  --smartreply-button-bg: #fff4f8;
+  --smartreply-button-hover: #f9e5ed;
+  --smartreply-button-line: #e8bfd0;
+}
+
+.smartreply-circle-btn[data-smartreply-mode="dark"],
+.smartreply-popover[data-smartreply-mode="dark"] {
+  color-scheme: dark !important;
+  --smartreply-surface: #182020;
+  --smartreply-surface-alt: #1d2827;
+  --smartreply-field: #202c2b;
+  --smartreply-preview-bg: #141c1b;
+  --smartreply-ink: #edf5f3;
+  --smartreply-copy: #dbe7e5;
+  --smartreply-muted: #9caaa8;
+  --smartreply-line: #334240;
+  --smartreply-field-line: #40514f;
+  --smartreply-accent-soft: #203d3c;
+  --smartreply-accent-text: #75d0cc;
+  --smartreply-hover: #233231;
+  --smartreply-overlay: rgba(18, 25, 24, 0.96);
+  --smartreply-error: #ffaaa2;
+  --smartreply-error-bg: #3b2424;
+  --smartreply-error-line: #74423f;
+  --smartreply-button-bg: #20302f;
+  --smartreply-button-hover: #29403e;
+  --smartreply-button-line: #45615e;
+}
+
+.smartreply-circle-btn[data-smartreply-theme="rose"][data-smartreply-mode="dark"],
+.smartreply-popover[data-smartreply-theme="rose"][data-smartreply-mode="dark"] {
+  --smartreply-accent: #b64d78;
+  --smartreply-accent-strong: #893455;
+  --smartreply-accent-text: #f09abd;
+  --smartreply-accent-soft: #432837;
+  --smartreply-accent-rgb: 182 77 120;
+  --smartreply-hover: #38272f;
+  --smartreply-button-bg: #38262e;
+  --smartreply-button-hover: #4b303c;
+  --smartreply-button-line: #704657;
+}
+
 .smartreply-btn-wrapper {
   display: inline-flex !important;
   align-items: center !important;
-  position: relative !important;
-  margin: 0 3px !important;
+  justify-content: center !important;
+  margin: 0 2px !important;
   vertical-align: middle !important;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-  z-index: 9999 !important;
 }
 
-/* Circular Icon Button (matches Loom & Gmail action buttons) */
+.smartreply-button-td {
+  padding: 0 1px !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+}
+
 .smartreply-circle-btn {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 32px !important;
-  height: 32px !important;
-  border-radius: 50% !important;
-  background: #eff6ff !important;
-  border: 1px solid #bfdbfe !important;
-  color: #1d4ed8 !important;
-  cursor: pointer !important;
+  width: 28px !important;
+  height: 28px !important;
   padding: 0 !important;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  outline: none !important;
-  user-select: none !important;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.12) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  transition: background 140ms ease !important;
 }
 
 .smartreply-circle-btn:hover {
-  background: #2563eb !important;
-  border-color: #1d4ed8 !important;
-  color: #ffffff !important;
-  transform: scale(1.08) !important;
-  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3) !important;
+  background: var(--smartreply-button-hover) !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
-.smartreply-circle-btn:active {
-  transform: scale(0.95) !important;
+.smartreply-circle-btn:focus-visible,
+.smartreply-popover button:focus-visible,
+.smartreply-popover textarea:focus-visible,
+.smartreply-popover select:focus-visible {
+  outline: 3px solid rgb(var(--smartreply-accent-rgb) / 25%) !important;
+  outline-offset: 2px !important;
 }
 
-.smartreply-pen-lightning-svg {
-  width: 18px !important;
-  height: 18px !important;
-  transition: transform 0.18s ease !important;
+.smartreply-circle-btn .smartreply-mark {
+  width: 22px !important;
+  height: 22px !important;
 }
 
-.smartreply-circle-btn:hover .smartreply-pen-lightning-svg path[fill="#38bdf8"] {
-  fill: #fef08a !important;
+.smartreply-mark-bg {
+  fill: var(--smartreply-accent) !important;
 }
 
-/* 3. Popover Dropdown (Fixed Viewport Floating) */
 .smartreply-popover {
   position: fixed !important;
-  width: 340px !important;
-  background: #ffffff !important;
-  border-radius: 16px !important;
-  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.18), 0 0 1px rgba(15, 23, 42, 0.2) !important;
-  border: 1px solid rgba(226, 232, 240, 0.8) !important;
-  overflow: hidden !important;
+  z-index: 2147483647 !important;
   display: flex !important;
   flex-direction: column !important;
-  animation: smartreply-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  z-index: 2147483647 !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif !important;
+  max-height: calc(100vh - 24px) !important;
+  overflow: hidden !important;
+  color: var(--smartreply-ink) !important;
+  background: var(--smartreply-surface) !important;
+  border: 1px solid var(--smartreply-line) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 24px 70px rgba(8, 18, 18, 0.28), 0 3px 12px rgba(8, 18, 18, 0.12) !important;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  animation: smartreply-enter 160ms cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.smartreply-hidden {
-  display: none !important;
-}
+.smartreply-hidden { display: none !important; }
 
-/* Popover Header */
 .smartreply-popover-header {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 12px 16px !important;
-  background: #ffffff !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-  color: #0f172a !important;
+  flex: 0 0 auto !important;
+  padding: 13px 15px !important;
+  background: var(--smartreply-surface-alt) !important;
+  border-bottom: 1px solid var(--smartreply-line) !important;
 }
 
 .smartreply-brand {
   display: flex !important;
   align-items: center !important;
-  gap: 7px !important;
+  gap: 9px !important;
 }
 
-.smartreply-brand-icon {
-  width: 16px !important;
-  height: 16px !important;
-  color: #8b5cf6 !important;
+.smartreply-brand .smartreply-mark {
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 auto !important;
 }
 
-.smartreply-brand-title {
+.smartreply-brand div {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+}
+
+.smartreply-brand strong {
+  color: var(--smartreply-ink) !important;
   font-size: 13px !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.2px !important;
-  color: #0f172a !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.1px !important;
 }
 
-.smartreply-close-btn {
-  background: transparent !important;
-  border: none !important;
-  color: #94a3b8 !important;
-  font-size: 16px !important;
-  line-height: 1 !important;
-  cursor: pointer !important;
-  padding: 4px 6px !important;
-  border-radius: 6px !important;
-  transition: all 0.15s !important;
-}
-
-.smartreply-close-btn:hover {
-  background: #f1f5f9 !important;
-  color: #0f172a !important;
-}
-
-/* Popover Body */
-.smartreply-popover-body {
-  padding: 14px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-  background: #ffffff !important;
-}
-
-.smartreply-section-title {
+.smartreply-brand span {
+  color: var(--smartreply-muted) !important;
   font-size: 10px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.8px !important;
-  color: #94a3b8 !important;
-  text-transform: uppercase !important;
-  margin-bottom: 2px !important;
-}
-
-/* Contextual Option Cards Container (2x2 Grid) */
-.smartreply-options-list {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 8px !important;
-  max-height: 260px !important;
-  overflow-y: auto !important;
-}
-
-/* Individual Contextual Option Card */
-.smartreply-option-card {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 4px !important;
-  padding: 10px 11px !important;
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 12px !important;
-  cursor: pointer !important;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  text-align: left !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
-}
-
-.smartreply-option-card:hover {
-  background: #f8fafc !important;
-  border-color: #8b5cf6 !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.12) !important;
-}
-
-.smartreply-option-header {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-}
-
-.smartreply-option-emoji {
-  font-size: 15px !important;
-  line-height: 1 !important;
-  flex-shrink: 0 !important;
-}
-
-.smartreply-option-title {
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  color: #0f172a !important;
   line-height: 1.2 !important;
 }
 
-.smartreply-option-desc {
-  font-size: 10px !important;
-  color: #64748b !important;
-  line-height: 1.35 !important;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
+.smartreply-close-btn {
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  color: var(--smartreply-muted) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font: 400 22px/28px ui-sans-serif, sans-serif !important;
 }
 
-/* Custom Prompt Input Section */
-.smartreply-custom-section {
-  margin-top: 4px !important;
+.smartreply-close-btn:hover {
+  color: var(--smartreply-ink) !important;
+  background: var(--smartreply-hover) !important;
 }
 
-.smartreply-input-wrapper {
-  position: relative !important;
+.smartreply-popover-body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 11px !important;
+  overflow-y: auto !important;
+  padding: 14px !important;
+  background: var(--smartreply-surface) !important;
+}
+
+.smartreply-section-heading {
   display: flex !important;
   align-items: center !important;
+  justify-content: space-between !important;
+  color: var(--smartreply-muted) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.smartreply-context-label {
+  padding: 3px 7px !important;
+  color: var(--smartreply-accent-text) !important;
+  background: var(--smartreply-accent-soft) !important;
+  border-radius: 999px !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.smartreply-preview {
+  min-height: 112px !important;
+  max-height: 174px !important;
+  overflow-y: auto !important;
+  padding: 12px 13px !important;
+  color: var(--smartreply-copy) !important;
+  background: var(--smartreply-preview-bg) !important;
+  border: 1px solid var(--smartreply-line) !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+  white-space: pre-wrap !important;
+  user-select: text !important;
+}
+
+.smartreply-preview.smartreply-error {
+  min-height: 74px !important;
+  color: var(--smartreply-error) !important;
+  background: var(--smartreply-error-bg) !important;
+  border-color: var(--smartreply-error-line) !important;
+}
+
+.smartreply-direction-group {
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.smartreply-direction-group legend,
+.smartreply-field-label {
+  display: block !important;
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+  color: var(--smartreply-muted) !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  line-height: 1.3 !important;
+}
+
+.smartreply-options-list {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 7px !important;
+}
+
+.smartreply-option {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+  min-height: 57px !important;
+  padding: 8px 9px !important;
+  color: var(--smartreply-ink) !important;
+  background: var(--smartreply-field) !important;
+  border: 1px solid var(--smartreply-line) !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: border-color 130ms ease, background 130ms ease, transform 130ms ease !important;
+}
+
+.smartreply-option:hover {
+  border-color: var(--smartreply-accent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.smartreply-option.smartreply-selected {
+  background: var(--smartreply-accent-soft) !important;
+  border-color: var(--smartreply-accent) !important;
+  box-shadow: inset 0 0 0 1px var(--smartreply-accent) !important;
+}
+
+.smartreply-option strong {
+  overflow: hidden !important;
+  color: var(--smartreply-ink) !important;
+  font-size: 11.5px !important;
+  line-height: 1.25 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.smartreply-option span {
+  display: -webkit-box !important;
+  overflow: hidden !important;
+  color: var(--smartreply-muted) !important;
+  font-size: 10px !important;
+  line-height: 1.3 !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
 }
 
 .smartreply-custom-input {
   width: 100% !important;
-  padding: 9px 36px 9px 12px !important;
-  font-size: 12px !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 20px !important;
-  outline: none !important;
-  background: #f8fafc !important;
-  color: #0f172a !important;
-  transition: all 0.18s ease !important;
+  min-height: 56px !important;
+  resize: vertical !important;
+  padding: 9px 10px !important;
+  color: var(--smartreply-ink) !important;
+  background: var(--smartreply-field) !important;
+  border: 1px solid var(--smartreply-field-line) !important;
+  border-radius: 10px !important;
   box-sizing: border-box !important;
+  font: 400 12px/1.4 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
 }
 
-.smartreply-custom-input:focus {
-  border-color: #8b5cf6 !important;
-  background: #ffffff !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+.smartreply-custom-input::placeholder { color: var(--smartreply-muted) !important; }
+
+.smartreply-controls-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
 }
 
-.smartreply-submit-btn {
-  position: absolute !important;
-  right: 4px !important;
-  width: 26px !important;
-  height: 26px !important;
-  padding: 0 !important;
-  background: #8b5cf6 !important;
-  color: #ffffff !important;
-  border: none !important;
-  border-radius: 50% !important;
+.smartreply-controls-row label {
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
-  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.3) !important;
+  gap: 7px !important;
+  color: var(--smartreply-muted) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
 }
 
-.smartreply-submit-btn:hover {
-  background: #7c3aed !important;
-  transform: scale(1.05) !important;
+.smartreply-controls-row select {
+  min-width: 0 !important;
+  height: 31px !important;
+  flex: 1 !important;
+  padding: 0 7px !important;
+  color: var(--smartreply-ink) !important;
+  background: var(--smartreply-field) !important;
+  border: 1px solid var(--smartreply-field-line) !important;
+  border-radius: 8px !important;
+  font-size: 11px !important;
+}
+
+.smartreply-action-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1.25fr !important;
+  gap: 8px !important;
+}
+
+.smartreply-action-row button {
+  height: 38px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.smartreply-regenerate-btn {
+  color: var(--smartreply-accent-text) !important;
+  background: var(--smartreply-field) !important;
+  border: 1px solid var(--smartreply-accent) !important;
+}
+
+.smartreply-regenerate-btn:hover { background: var(--smartreply-hover) !important; }
+
+.smartreply-insert-btn {
+  color: #fff !important;
+  background: var(--smartreply-accent) !important;
+  border: 1px solid var(--smartreply-accent) !important;
+  box-shadow: 0 4px 12px rgb(var(--smartreply-accent-rgb) / 20%) !important;
+}
+
+.smartreply-insert-btn:hover:not(:disabled) { background: var(--smartreply-accent-strong) !important; }
+
+.smartreply-insert-btn:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.45 !important;
+  box-shadow: none !important;
+}
+
+.smartreply-footnote {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  color: var(--smartreply-muted) !important;
+  font-size: 9.5px !important;
 }
 
 .smartreply-model-badge {
-  font-size: 10px !important;
-  color: #94a3b8 !important;
-  font-weight: 500 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 4px !important;
-  margin-top: 2px !important;
+  overflow: hidden !important;
+  max-width: 240px !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
-/* Loading Overlay (Hidden by default, shown only when active) */
 .smartreply-loading-overlay {
   position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  backdrop-filter: blur(4px) !important;
+  inset: 0 !important;
+  z-index: 20 !important;
   display: none !important;
-  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  z-index: 100 !important;
+  flex-direction: column !important;
+  color: var(--smartreply-ink) !important;
+  background: var(--smartreply-overlay) !important;
+  backdrop-filter: blur(5px) !important;
 }
 
-.smartreply-loading-overlay.smartreply-active {
-  display: flex !important;
-}
+.smartreply-loading-overlay.smartreply-active { display: flex !important; }
 
 .smartreply-spinner {
   width: 30px !important;
   height: 30px !important;
-  border: 3px solid #f1f5f9 !important;
-  border-top-color: #8b5cf6 !important;
+  margin-bottom: 12px !important;
+  border: 3px solid var(--smartreply-line) !important;
+  border-top-color: var(--smartreply-accent) !important;
   border-radius: 50% !important;
-  animation: smartreply-spin 0.8s linear infinite !important;
+  animation: smartreply-spin 720ms linear infinite !important;
 }
 
-.smartreply-loading-title {
-  font-size: 13px !important;
-  font-weight: 700 !important;
-  color: #0f172a !important;
-  margin-top: 12px !important;
-}
+.smartreply-loading-title { font-size: 13px !important; }
 
 .smartreply-loading-subtitle {
+  margin-top: 3px !important;
+  color: var(--smartreply-muted) !important;
   font-size: 11px !important;
-  color: #64748b !important;
-  margin-top: 2px !important;
 }
 
-/* Toast Notification */
 .smartreply-toast {
   position: fixed !important;
-  bottom: 24px !important;
-  right: 24px !important;
-  background: #0f172a !important;
-  color: #ffffff !important;
-  padding: 12px 18px !important;
-  border-radius: 8px !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  z-index: 999999 !important;
+  right: 22px !important;
+  bottom: 22px !important;
+  z-index: 2147483647 !important;
+  max-width: 360px !important;
+  padding: 11px 14px !important;
+  color: #fff !important;
+  background: #233230 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28) !important;
+  font: 600 12px/1.35 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
   opacity: 0 !important;
-  transform: translateY(20px) !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   pointer-events: none !important;
-  border-left: 4px solid #2563eb !important;
+  transform: translateY(12px) !important;
+  transition: opacity 160ms ease, transform 160ms ease !important;
 }
 
 .smartreply-toast-show {
   opacity: 1 !important;
   transform: translateY(0) !important;
-  pointer-events: auto !important;
 }
 
-.smartreply-toast-success {
-  border-left-color: #10b981 !important;
-}
+.smartreply-toast-success { border-left: 4px solid #4bb28a !important; }
+.smartreply-toast-warning { border-left: 4px solid #df9b31 !important; }
+.smartreply-toast-error { border-left: 4px solid #cf5b55 !important; }
 
-.smartreply-toast-warning {
-  border-left-color: #f59e0b !important;
-}
-
-.smartreply-toast-error {
-  border-left-color: #ef4444 !important;
-}
-
-@keyframes smartreply-pop {
-  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+@keyframes smartreply-enter {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes smartreply-spin {
   to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smartreply-popover,
+  .smartreply-spinner,
+  .smartreply-circle-btn,
+  .smartreply-option,
+  .smartreply-toast {
+    animation: none !important;
+    transition: none !important;
+  }
 }

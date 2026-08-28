@@ -1,524 +1,544 @@
 /**
- * SmartReply AI — Professional Gmail Content Script
- * Injects context-aware AI reply controls into Gmail formatting & compose toolbars
- * with full thread history extraction and dual-injection guarantee.
+ * SmartReply AI — Gmail compose integration.
+ * Generates reviewable drafts and never sends email on the user's behalf.
  */
 
 (function () {
   'use strict';
 
-  console.log('[SmartReply AI] Gmail Content Script Initialized.');
-
-  const injectedElements = new WeakSet();
-
-  /**
-   * Main scan function: Finds the icon toolbar on the right of the Send button
-   */
-  function scanAndInjectAll() {
-    const iconToolbars = document.querySelectorAll(
-      'td.gU.Up, div.gU.Up, div.aDh, .btC, tr.btC'
-    );
-
-    iconToolbars.forEach((toolbar) => {
-      if (injectedElements.has(toolbar)) return;
-
-      const hasTools = toolbar.querySelector('[command="Files"], [aria-label*="Attach"], [aria-label*="Format"], [command="+formatting"], .aoO, .dC');
-      if (hasTools || toolbar.classList.contains('Up') || toolbar.classList.contains('aDh')) {
-        injectCircularToolbarButton(toolbar);
-        injectedElements.add(toolbar);
-      }
-    });
-  }
-
-  /**
-   * Injects a single, beautiful circular icon button (pen + golden lightning) next to Loom button
-   */
-  function injectCircularToolbarButton(toolbar) {
-    if (toolbar.querySelector('.smartreply-btn-wrapper')) return;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'smartreply-btn-wrapper';
-
-    // Circular Icon Button (Pen + Golden Lightning with clear separation)
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'smartreply-circle-btn';
-    btn.setAttribute('title', 'SmartReply AI: Generate Email Reply');
-    btn.setAttribute('aria-label', 'SmartReply AI');
-    btn.innerHTML = `
-      <svg class="smartreply-pen-lightning-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Blue Pen (Shifted Down-Left) -->
-        <g transform="translate(-1.5, 1.5) scale(0.82)">
-          <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#2563eb"/>
-          <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#1d4ed8"/>
-        </g>
-        <!-- Golden / Yellow Lightning Bolt (Shifted Top-Right for Clear Spacing) -->
-        <g transform="translate(6.5, -1) scale(0.78)">
-          <path d="M12 1L7 9H12L10 16L17 7H12L14 1H12Z" fill="#fbbf24" stroke="#d97706" stroke-width="1.2" stroke-linejoin="round"/>
-        </g>
-      </svg>
-    `;
-
-    const composeContainer = toolbar.closest('.M9, .AD, div[role="dialog"], table.cf') || document;
-    
-    // Create popover mounted to document.body to avoid clipping
-    const popover = createPopoverElement(composeContainer);
-    document.body.appendChild(popover);
-
-    wrapper.appendChild(btn);
-
-    // Target the tr or container to place right next to Loom button
-    const tr = toolbar.closest('tr.btC') || (toolbar.tagName.toLowerCase() === 'tr' ? toolbar : null);
-    if (tr) {
-      const td = document.createElement('td');
-      td.className = 'smartreply-button-td';
-      td.style.verticalAlign = 'middle';
-      td.appendChild(wrapper);
-
-      const loomTd = tr.querySelector('.loom-button-td');
-      if (loomTd && loomTd.nextSibling) {
-        tr.insertBefore(td, loomTd.nextSibling);
-      } else {
-        const formatTd = tr.querySelector('td.oc.gU, td.a8X.gU');
-        if (formatTd) {
-          tr.insertBefore(td, formatTd);
-        } else {
-          tr.appendChild(td);
-        }
-      }
-    } else {
-      const rightIconContainer = toolbar.querySelector('.aDh, .gU.Up, td.gU.Up') || toolbar;
-      const formattingIcon = rightIconContainer.querySelector('[command="+formatting"], [aria-label*="Formatting"], [command="Files"]');
-      if (formattingIcon && formattingIcon.parentElement) {
-        formattingIcon.parentElement.insertBefore(wrapper, formattingIcon);
-      } else if (rightIconContainer.firstChild) {
-        rightIconContainer.insertBefore(wrapper, rightIconContainer.firstChild);
-      } else {
-        rightIconContainer.appendChild(wrapper);
-      }
-    }
-
-    bindPopoverEvents(btn, popover, composeContainer);
-  }
-
-  /**
-   * Builds the sleek, modern popover DOM element
-   */
-  function createPopoverElement(composeContainer) {
-    const popover = document.createElement('div');
-    popover.className = 'smartreply-popover smartreply-hidden';
-    popover.innerHTML = `
-      <div class="smartreply-popover-header">
-        <div class="smartreply-brand">
-          <svg class="smartreply-brand-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
-          </svg>
-          <span class="smartreply-brand-title">SmartReply AI</span>
-        </div>
-        <button type="button" class="smartreply-close-btn" title="Close">&times;</button>
-      </div>
-
-      <!-- Popover Body -->
-      <div class="smartreply-popover-body">
-        <div class="smartreply-section-title">SUGGESTED REPLIES</div>
-
-        <!-- Dynamic Contextual Options List -->
-        <div class="smartreply-options-list"></div>
-
-        <!-- Custom Prompt Input -->
-        <div class="smartreply-custom-section">
-          <div class="smartreply-input-wrapper">
-            <input type="text" class="smartreply-custom-input" placeholder="Draft custom reply instruction..." />
-            <button type="button" class="smartreply-submit-btn" title="Generate Custom Reply">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="smartreply-model-badge">✨ Powered by Gemini</div>
-      </div>
-
-      <!-- Loading State Overlay -->
-      <div class="smartreply-loading-overlay">
-        <div class="smartreply-spinner"></div>
-        <div class="smartreply-loading-title">Analyzing thread...</div>
-        <div class="smartreply-loading-subtitle">Crafting the perfect response</div>
-      </div>
-    `;
-
-    return popover;
-  }
-
-  /**
-   * Binds popover interactions and auto-analysis
-   */
-  function bindPopoverEvents(triggerBtn, popover, composeContainer) {
-    const closeBtn = popover.querySelector('.smartreply-close-btn');
-    const customInput = popover.querySelector('.smartreply-custom-input');
-    const submitBtn = popover.querySelector('.smartreply-submit-btn');
-    const optionsList = popover.querySelector('.smartreply-options-list');
-    const loadingOverlay = popover.querySelector('.smartreply-loading-overlay');
-
-    const refreshBadge = () => {
-      chrome.storage.local.get(['selectedModel', 'lastUsedModel'], (res) => {
-        const badge = popover.querySelector('.smartreply-model-badge');
-        if (badge) {
-          const model = res.lastUsedModel || res.selectedModel || 'gemini-3.1-flash-lite';
-          badge.textContent = `⚡ Powered by ${model}`;
-        }
-      });
-    };
-
-    triggerBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      console.log('%c[SmartReply AI] AI Button Clicked -> Analyzing thread context...', 'color: #2563eb; font-weight: bold;');
-      const isHidden = popover.classList.contains('smartreply-hidden');
-      closeAllPopovers();
-
-      if (isHidden) {
-        refreshBadge();
-        popover.classList.remove('smartreply-hidden');
-
-        // Dynamically position popover directly above the button
-        const rect = triggerBtn.getBoundingClientRect();
-        const popoverWidth = 330;
-        const popoverHeight = 310;
-
-        let left = rect.left - 20;
-        if (left + popoverWidth > window.innerWidth - 16) {
-          left = window.innerWidth - popoverWidth - 16;
-        }
-        if (left < 16) left = 16;
-
-        let top = rect.top - popoverHeight - 12;
-        if (top < 16) top = rect.bottom + 8;
-
-        popover.style.left = `${left}px`;
-        popover.style.top = `${top}px`;
-
-        // Show loading overlay instead of skeletons
-        if (loadingOverlay) {
-          const title = loadingOverlay.querySelector('.smartreply-loading-title');
-          const sub = loadingOverlay.querySelector('.smartreply-loading-subtitle');
-          if (title) title.textContent = 'Analyzing conversation...';
-          if (sub) sub.textContent = 'Sending request & awaiting response';
-          loadingOverlay.classList.add('smartreply-active');
-        }
-        optionsList.innerHTML = '';
-
-        // Extract context and ask Gemini to suggest tailored options with pre-generated replies
-        const context = extractFullThreadContext(composeContainer);
-        const payload = {
-          action: 'ANALYZE_AND_PREGENERATE',
-          subject: context.subject,
-          sender: context.sender,
-          threadHistory: context.threadHistory,
-          emailContent: context.latestBody
-        };
-
-        console.log('[SmartReply AI] Sending thread context to Gemini:', payload);
-
-        chrome.runtime.sendMessage(payload, (response) => {
-          if (loadingOverlay) loadingOverlay.classList.remove('smartreply-active');
-
-          if (chrome.runtime.lastError || !response || !response.success || !Array.isArray(response.options)) {
-            console.warn('[SmartReply AI] Auto-analysis error:', response || chrome.runtime.lastError);
-            optionsList.innerHTML = `
-              <div style="padding: 12px; font-size: 12px; color: #ef4444; text-align: center;">
-                ${response?.message || 'Could not analyze thread. Please verify API key in extension settings.'}
-              </div>
-            `;
-            return;
-          }
-
-          console.log(`%c[SmartReply AI] Received ${response.options.length} contextual options!`, 'color: #10b981; font-weight: bold;', response.options);
-
-          // Render options
-          optionsList.innerHTML = '';
-          response.options.forEach((opt) => {
-            const card = document.createElement('div');
-            card.className = 'smartreply-option-card';
-            card.innerHTML = `
-              <div class="smartreply-option-header">
-                <span class="smartreply-option-emoji">${opt.emoji || '💬'}</span>
-                <span class="smartreply-option-title">${escapeHtml(opt.title || 'Reply Option')}</span>
-              </div>
-              <div class="smartreply-option-desc">${escapeHtml(opt.description || '')}</div>
-            `;
-
-            // Instant 0ms insertion on click!
-            card.addEventListener('click', () => {
-              console.log(`%c[SmartReply AI] Option Selected: "${opt.title}" -> Inserting reply...`, 'color: #10b981; font-weight: bold;');
-              const composeBox = findComposeBox(composeContainer);
-              insertReplyText(composeBox, opt.reply);
-              popover.classList.add('smartreply-hidden');
-              showNotification(`✨ Inserted: "${opt.title}"`, 'success');
-            });
-
-            optionsList.appendChild(card);
-          });
-        });
-      }
-    });
-
-    closeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      popover.classList.add('smartreply-hidden');
-    });
-
-    popover.addEventListener('click', (e) => e.stopPropagation());
-
-    submitBtn.addEventListener('click', () => {
-      const instruction = customInput.value.trim();
-      if (!instruction) return;
-
-      if (loadingOverlay) {
-        const title = loadingOverlay.querySelector('.smartreply-loading-title');
-        const sub = loadingOverlay.querySelector('.smartreply-loading-subtitle');
-        if (title) title.textContent = 'Drafting custom reply...';
-        if (sub) sub.textContent = 'Calibrating tone with Gemini';
-        loadingOverlay.classList.add('smartreply-active');
-      }
-      const composeBox = findComposeBox(composeContainer);
-      const context = extractFullThreadContext(composeContainer);
-
-      chrome.runtime.sendMessage({
-        action: 'GENERATE_CUSTOM',
-        subject: context.subject,
-        sender: context.sender,
-        threadHistory: context.threadHistory,
-        emailContent: context.latestBody,
-        customInstruction: instruction
-      }, (res) => {
-        if (loadingOverlay) loadingOverlay.classList.remove('smartreply-active');
-        popover.classList.add('smartreply-hidden');
-        if (res && res.success && res.replyText) {
-          insertReplyText(composeBox, res.replyText);
-          showNotification('Custom reply drafted & inserted!', 'success');
-        } else {
-          showNotification(res?.message || 'Failed to draft custom reply.', 'error');
-        }
-      });
-    });
-
-    customInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        submitBtn.click();
-      }
-    });
-  }
-
-  function closeAllPopovers() {
-    document.querySelectorAll('.smartreply-popover').forEach((p) => {
-      p.classList.add('smartreply-hidden');
-    });
-  }
-
-  document.addEventListener('click', () => {
-    closeAllPopovers();
-  });
-
-  /**
-   * Extracts full thread history and triggers generation with rich console logs
-   */
-  async function triggerReplyGeneration(composeContainer, popover, options) {
-    const loadingOverlay = popover.querySelector('.smartreply-loading-overlay');
-    if (loadingOverlay) loadingOverlay.classList.add('smartreply-active');
-
-    console.log('%c==============================================================', 'color: #2563eb;');
-    console.log('%c[SmartReply AI] Step 1: Starting Reply Generation...', 'color: #2563eb; font-weight: bold;');
-
-    let composeBox = null;
-    let context = { subject: '', sender: '', latestBody: '', threadHistory: '' };
-
-    try {
-      composeBox = findComposeBox(composeContainer);
-      console.log('[SmartReply AI] Compose Box Located:', composeBox);
-
-      context = extractFullThreadContext(composeContainer);
-      console.log('[SmartReply AI] Extracted Subject:', context.subject);
-      console.log('[SmartReply AI] Extracted Sender:', context.sender);
-      console.log('[SmartReply AI] Extracted Thread History:\n', context.threadHistory || context.latestBody);
-    } catch (extractErr) {
-      console.error('[SmartReply AI] Context Extraction Error:', extractErr);
-    }
-
-    const payload = {
-      action: 'GENERATE_REPLY',
-      subject: context.subject,
-      sender: context.sender,
-      threadHistory: context.threadHistory,
-      emailContent: context.latestBody,
-      quickMood: options.quickMood || 'auto',
-      customInstruction: options.customInstruction || ''
-    };
-
-    console.log('[SmartReply AI] Step 2: Sending Payload to Background Service Worker:', payload);
-
-    // Client-side safety timeout: never allow spinner to freeze longer than 10 seconds
-    const safetyTimer = setTimeout(() => {
-      if (loadingOverlay) loadingOverlay.classList.remove('smartreply-active');
-      popover.classList.add('smartreply-hidden');
-      console.error('[SmartReply AI] Error: Background service worker timed out after 10s.');
-      showNotification('Request timed out. Open DevTools (F12) to see details.', 'error');
-    }, 10000);
-
-    try {
-      chrome.runtime.sendMessage(payload, (response) => {
-        clearTimeout(safetyTimer);
-        if (loadingOverlay) loadingOverlay.classList.remove('smartreply-active');
-        popover.classList.add('smartreply-hidden');
-
-        console.log('%c[SmartReply AI] Step 3: Response Received from Background:', 'color: #10b981; font-weight: bold;', response);
-
-        if (chrome.runtime.lastError) {
-          console.error('[SmartReply AI] chrome.runtime.lastError:', chrome.runtime.lastError.message);
-          showNotification(`Extension error: ${chrome.runtime.lastError.message}`, 'error');
-          return;
-        }
-
-        if (!response) {
-          console.error('[SmartReply AI] No response returned from background worker.');
-          showNotification('No response received from background service. Please reload Gmail.', 'error');
-          return;
-        }
-
-        if (response.success && response.replyText) {
-          console.log(`%c[SmartReply AI] Step 4: Successfully Generated Text using ${response.modelUsed}:\n`, 'color: #10b981; font-weight: bold;', response.replyText);
-          insertReplyText(composeBox, response.replyText);
-          const modelTag = response.modelUsed ? ` (via ${response.modelUsed})` : '';
-          showNotification(`Reply generated & inserted${modelTag}!`, 'success');
-        } else {
-          console.error('[SmartReply AI] Generation Failed. Error details:', response);
-          if (response.error === 'NO_API_KEY') {
-            showNotification('🔑 Please set your Gemini API Key in extension settings.', 'warning');
-          } else {
-            let errorText = response.message || response.error || 'Failed to generate reply.';
-            if (typeof errorText === 'string' && errorText.includes('API_KEY_INVALID')) {
-              errorText = 'API key invalid. Please verify in extension settings.';
-            }
-            showNotification(`✕ ${errorText}`, 'error');
-          }
-        }
-        console.log('%c==============================================================', 'color: #2563eb;');
-      });
-    } catch (err) {
-      clearTimeout(safetyTimer);
-      if (loadingOverlay) loadingOverlay.classList.remove('smartreply-active');
-      popover.classList.add('smartreply-hidden');
-      console.error('[SmartReply AI] Critical Message Dispatch Error:', err);
-      showNotification('Extension disconnected. Please refresh Gmail.', 'error');
-    }
-  }
-
-  /**
-   * Deep Thread Extractor: Collects full conversation history and timeline
-   */
-  function extractFullThreadContext(composeContainer) {
-    let subject = '';
-    let sender = '';
-    let latestBody = '';
-    let threadHistory = '';
-
-    const subjectEl = document.querySelector('h2.hP, h2[data-thread-perm-id], [data-legacy-thread-id]');
-    if (subjectEl) {
-      subject = subjectEl.innerText.trim();
-    } else {
-      subject = document.title.replace(/ - [^ -]+@.+ - Gmail/i, '').replace(/ - Gmail/i, '').trim();
-    }
-
-    const messageContainers = document.querySelectorAll(
-      'div[role="listitem"], div.adn.ads, div.kv, div.h7, div.gs'
-    );
-
-    const historyItems = [];
-
-    if (messageContainers.length > 0) {
-      messageContainers.forEach((msgEl, index) => {
-        const senderNameEl = msgEl.querySelector('.gD, span[email], .zF');
-        const senderText = senderNameEl ? (senderNameEl.getAttribute('name') || senderNameEl.innerText || senderNameEl.getAttribute('email')) : `Participant ${index + 1}`;
-        const timeEl = msgEl.querySelector('.g3, .date');
-        const timeText = timeEl ? timeEl.innerText.trim() : '';
-
-        const bodyEl = msgEl.querySelector('.a3s.aiL, .ii.gt');
-        if (bodyEl) {
-          const clone = bodyEl.cloneNode(true);
-          const quotes = clone.querySelectorAll('.gmail_quote, .gmail_extra, blockquote');
-          quotes.forEach((q) => q.remove());
-          const cleanBody = clone.innerText.trim();
-
-          if (cleanBody) {
-            historyItems.push(`[Message ${index + 1} from ${senderText}${timeText ? ' at ' + timeText : ''}]:\n${cleanBody}`);
-            sender = senderText;
-            latestBody = cleanBody;
-          }
-        }
-      });
-    }
-
-    if (historyItems.length === 0) {
-      const bodies = document.querySelectorAll('.a3s.aiL, .ii.gt');
-      bodies.forEach((b, idx) => {
-        const clone = b.cloneNode(true);
-        const quotes = clone.querySelectorAll('.gmail_quote, .gmail_extra, blockquote');
-        quotes.forEach((q) => q.remove());
-        const text = clone.innerText.trim();
-        if (text) {
-          historyItems.push(`[Email ${idx + 1}]:\n${text}`);
-          latestBody = text;
-        }
-      });
-
-      const senderEls = document.querySelectorAll('.gD, span[email], .zF');
-      if (senderEls.length > 0) {
-        const last = senderEls[senderEls.length - 1];
-        sender = last.getAttribute('name') || last.innerText || last.getAttribute('email') || '';
-      }
-    }
-
-    threadHistory = historyItems.join('\n\n---\n\n');
-
-    return { subject, sender, latestBody, threadHistory };
-  }
-
-  /**
-   * Find Gmail compose editor
-   */
-  function findComposeBox(container) {
-    return container.querySelector(
-      'div[role="textbox"][contenteditable="true"], div[aria-label*="Message Body"], .Am.Al.editable, div[g_editable="true"]'
-    ) || document.querySelector('div[role="textbox"][contenteditable="true"]');
-  }
-
-  /**
-   * Insert reply into Gmail editor
-   */
-  function insertReplyText(composeBox, text) {
-    if (!composeBox) {
-      showNotification('Please click inside the reply message box first.', 'error');
+  const injectedToolbars = new WeakSet();
+  const injectedComposeContainers = new WeakSet();
+  const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const disconnectedMessage = 'SmartReply was updated or reloaded. Refresh Gmail and try again.';
+  let scanQueued = false;
+
+  const brandMark = `
+    <svg class="smartreply-mark" viewBox="0 0 24 24" aria-hidden="true">
+      <rect class="smartreply-mark-bg" x="1" y="1" width="22" height="22" rx="6"/>
+      <path d="M15.9 7.1H9.2a3.7 3.7 0 0 0-3.7 3.7v2.4a3.7 3.7 0 0 0 3.7 3.7h1.4l-2.1 2v-2H8.2" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M9 10h6M9 13h4.4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>`;
+
+  function getLocalSettings(keys, callback) {
+    const localStorage = globalThis.chrome?.storage?.local;
+    if (!localStorage?.get) {
+      callback({}, new Error('Extension storage is unavailable.'));
       return;
     }
 
-    composeBox.focus();
-
-    const formattedHtml = text
-      .split('\n\n')
-      .map((p) => `<div>${escapeHtml(p).replace(/\n/g, '<br>')}</div>`)
-      .join('<div><br></div>');
-
-    const successful = document.execCommand('insertHTML', false, formattedHtml + '<div><br></div>');
-    if (!successful) {
-      const existing = composeBox.innerHTML;
-      composeBox.innerHTML = formattedHtml + '<div><br></div>' + existing;
+    try {
+      localStorage.get(keys, (saved) => {
+        const runtimeError = globalThis.chrome?.runtime?.lastError;
+        callback(saved || {}, runtimeError || null);
+      });
+    } catch (error) {
+      callback({}, error);
     }
-
-    composeBox.dispatchEvent(new Event('input', { bubbles: true }));
-    composeBox.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  function escapeHtml(str) {
-    return str
+  function scanAndInject() {
+    removeOrphanedPopovers();
+
+    const toolbars = document.querySelectorAll('td.gU.Up, div.gU.Up, div.aDh, .btC, tr.btC');
+    toolbars.forEach((toolbar) => {
+      const composeContainer = toolbar.closest('.M9, .AD, div[role="dialog"], table.cf') || toolbar.parentElement;
+      if (injectedToolbars.has(toolbar) || injectedComposeContainers.has(composeContainer) || toolbar.querySelector('.smartreply-btn-wrapper')) return;
+
+      const looksLikeComposeToolbar = toolbar.matches('tr.btC, .btC, .aDh, .Up') ||
+        toolbar.querySelector('[command="Files"], [aria-label*="Attach"], [command="+formatting"]');
+
+      if (looksLikeComposeToolbar) {
+        injectToolbarButton(toolbar, composeContainer);
+        injectedToolbars.add(toolbar);
+        injectedComposeContainers.add(composeContainer);
+      }
+    });
+  }
+
+  function scheduleScan() {
+    if (scanQueued) return;
+    scanQueued = true;
+    requestAnimationFrame(() => {
+      scanQueued = false;
+      scanAndInject();
+    });
+  }
+
+  function injectToolbarButton(toolbar, composeContainer) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'smartreply-btn-wrapper';
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'smartreply-circle-btn';
+    button.title = 'SmartReply AI — draft a reply';
+    button.setAttribute('aria-label', 'Draft a reply with SmartReply AI');
+    button.innerHTML = brandMark;
+    wrapper.appendChild(button);
+
+    const popover = createPopover(composeContainer);
+    popover.smartreplyComposeContainer = composeContainer;
+    document.body.appendChild(popover);
+
+    getLocalSettings(['colorTheme', 'appearanceMode'], (saved) => {
+      applyContentAppearance(button, saved);
+      applyContentAppearance(popover, saved);
+    });
+
+    const row = toolbar.closest('tr.btC') || (toolbar.matches('tr') ? toolbar : null);
+    if (row) {
+      const cell = document.createElement('td');
+      cell.className = 'smartreply-button-td';
+      cell.appendChild(wrapper);
+
+      // Gmail places third-party compose actions (such as Loom) between Send
+      // and its native formatting control. Anchoring to the Aa control keeps
+      // SmartReply in the expected order without depending on another
+      // extension's private DOM or translated labels:
+      // Send -> third-party actions -> SmartReply -> Aa.
+      const formattingButton = row.querySelector(
+        '[command="+formatting"], ' +
+        '.aA7.aaA.aMZ, ' +
+        '[aria-label*="Formatting options" i], ' +
+        '[data-tooltip*="Formatting options" i]'
+      );
+      const formattingCell = formattingButton?.closest('td');
+
+      if (formattingCell && formattingCell.parentElement === row) {
+        row.insertBefore(cell, formattingCell);
+      } else {
+        // Native-class fallback works independently of Gmail's language.
+        const sendButton = row.querySelector(
+          '.aoO, [command="Send"], ' +
+          '[role="button"][aria-label^="Send" i], ' +
+          '[role="button"][data-tooltip^="Send" i]'
+        );
+        const sendCell = sendButton?.closest('td');
+
+        if (sendCell && sendCell.parentElement === row) {
+          sendCell.insertAdjacentElement('afterend', cell);
+        } else {
+          row.appendChild(cell);
+        }
+      }
+    } else {
+      // Pop-out and alternate compose layouts may use a flex toolbar rather
+      // than table cells. Insert immediately before the Aa control there too.
+      const formattingButton = toolbar.querySelector(
+        '[command="+formatting"], ' +
+        '.aA7.aaA.aMZ, ' +
+        '[aria-label*="Formatting options" i], ' +
+        '[data-tooltip*="Formatting options" i]'
+      );
+      const formattingUnit = formattingButton?.closest('.gU') || formattingButton;
+
+      if (formattingUnit?.parentElement) {
+        formattingUnit.insertAdjacentElement('beforebegin', wrapper);
+      } else {
+        toolbar.appendChild(wrapper);
+      }
+    }
+
+    bindPopover(button, popover, composeContainer);
+  }
+
+  function createPopover() {
+    const popover = document.createElement('section');
+    popover.className = 'smartreply-popover smartreply-hidden';
+    popover.setAttribute('aria-label', 'SmartReply AI draft panel');
+    popover.innerHTML = `
+      <header class="smartreply-popover-header">
+        <div class="smartreply-brand">${brandMark}<div><strong>SmartReply AI</strong><span>Review before inserting</span></div></div>
+        <button type="button" class="smartreply-close-btn" aria-label="Close SmartReply AI">×</button>
+      </header>
+
+      <div class="smartreply-popover-body">
+        <div class="smartreply-section-heading"><span>Draft preview</span><span class="smartreply-context-label">Best fit</span></div>
+        <div class="smartreply-preview" tabindex="0" aria-live="polite">Choose a reply direction to preview its draft.</div>
+
+        <fieldset class="smartreply-direction-group">
+          <legend>Reply direction</legend>
+          <div class="smartreply-options-list" role="list"></div>
+        </fieldset>
+
+        <label class="smartreply-field-label">Add a detail or instruction</label>
+        <textarea class="smartreply-custom-input" rows="2" maxlength="1200" aria-label="Add a detail or instruction" placeholder="e.g. Thursday at 2 PM works; ask for the deck"></textarea>
+
+        <div class="smartreply-controls-row">
+          <label>Tone
+            <select class="smartreply-tone-select">
+              <option value="professional">Professional</option>
+              <option value="direct">Direct</option>
+              <option value="friendly">Friendly</option>
+              <option value="formal">Formal</option>
+            </select>
+          </label>
+          <label>Length
+            <select class="smartreply-length-select">
+              <option value="short">Short</option>
+              <option value="medium" selected>Medium</option>
+              <option value="detailed">Detailed</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="smartreply-action-row">
+          <button type="button" class="smartreply-regenerate-btn">Regenerate</button>
+          <button type="button" class="smartreply-insert-btn" disabled>Insert draft</button>
+        </div>
+
+        <div class="smartreply-footnote"><span class="smartreply-model-badge">Google Gemini</span><span>Never auto-sends</span></div>
+      </div>
+
+      <div class="smartreply-loading-overlay" aria-live="polite">
+        <div class="smartreply-spinner"></div>
+        <strong class="smartreply-loading-title">Reading the thread…</strong>
+        <span class="smartreply-loading-subtitle">Drafting four useful directions</span>
+      </div>`;
+    return popover;
+  }
+
+  function bindPopover(trigger, popover, composeContainer) {
+    const closeButton = popover.querySelector('.smartreply-close-btn');
+    const preview = popover.querySelector('.smartreply-preview');
+    const contextLabel = popover.querySelector('.smartreply-context-label');
+    const optionsList = popover.querySelector('.smartreply-options-list');
+    const customInput = popover.querySelector('.smartreply-custom-input');
+    const toneSelect = popover.querySelector('.smartreply-tone-select');
+    const lengthSelect = popover.querySelector('.smartreply-length-select');
+    const regenerateButton = popover.querySelector('.smartreply-regenerate-btn');
+    const insertButton = popover.querySelector('.smartreply-insert-btn');
+    const loadingOverlay = popover.querySelector('.smartreply-loading-overlay');
+    const loadingTitle = popover.querySelector('.smartreply-loading-title');
+    const loadingSubtitle = popover.querySelector('.smartreply-loading-subtitle');
+    const modelBadge = popover.querySelector('.smartreply-model-badge');
+
+    const state = {
+      options: [],
+      selectedIndex: 0,
+      customReply: '',
+      context: null,
+      requestId: 0
+    };
+
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const wasHidden = popover.classList.contains('smartreply-hidden');
+      closeAllPopovers(popover);
+      if (!wasHidden) return;
+
+      popover.classList.remove('smartreply-hidden');
+      positionPopover(trigger, popover);
+
+      getLocalSettings(['defaultTone', 'defaultLength', 'colorTheme', 'appearanceMode'], (saved, storageError) => {
+        if (saved.defaultTone) toneSelect.value = saved.defaultTone;
+        if (saved.defaultLength) lengthSelect.value = saved.defaultLength;
+        applyContentAppearance(trigger, saved);
+        applyContentAppearance(popover, saved);
+        if (storageError) {
+          showPanelError(disconnectedMessage);
+          return;
+        }
+        if (!state.options.length) requestDrafts(false);
+      });
+    });
+
+    closeButton.addEventListener('click', () => popover.classList.add('smartreply-hidden'));
+    popover.addEventListener('click', (event) => event.stopPropagation());
+
+    regenerateButton.addEventListener('click', () => {
+      requestDrafts(Boolean(customInput.value.trim()));
+    });
+
+    insertButton.addEventListener('click', () => {
+      const reply = state.customReply || state.options[state.selectedIndex]?.reply;
+      if (!reply) return;
+
+      const inserted = insertReplyText(findComposeBox(composeContainer), reply);
+      if (inserted) {
+        popover.classList.add('smartreply-hidden');
+        showNotification('Draft inserted. Review it before sending.', 'success');
+      }
+    });
+
+    customInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        requestDrafts(true);
+      }
+    });
+
+    toneSelect.addEventListener('change', () => {
+      regenerateButton.textContent = 'Apply & regenerate';
+    });
+    lengthSelect.addEventListener('change', () => {
+      regenerateButton.textContent = 'Apply & regenerate';
+    });
+
+    function requestDrafts(useCustomInstruction) {
+      const runtime = globalThis.chrome?.runtime;
+      if (!runtime?.sendMessage) {
+        showPanelError(disconnectedMessage);
+        return;
+      }
+
+      const instruction = customInput.value.trim();
+      if (useCustomInstruction && !instruction) {
+        showNotification('Add a drafting note first.', 'warning');
+        customInput.focus();
+        return;
+      }
+
+      state.context = extractThreadContext(composeContainer);
+      state.requestId += 1;
+      const requestId = state.requestId;
+      state.customReply = '';
+      setLoading(true, useCustomInstruction ? 'Following your note…' : 'Reading the thread…', useCustomInstruction ? 'Drafting a tailored reply' : 'Drafting four useful directions');
+
+      const basePayload = {
+        subject: state.context.subject,
+        sender: state.context.sender,
+        threadHistory: state.context.threadHistory,
+        emailContent: state.context.latestBody,
+        toneOverride: toneSelect.value,
+        lengthOverride: lengthSelect.value
+      };
+
+      const payload = useCustomInstruction
+        ? { ...basePayload, action: 'GENERATE_CUSTOM', customInstruction: instruction }
+        : { ...basePayload, action: 'ANALYZE_AND_PREGENERATE' };
+
+      const timeout = window.setTimeout(() => {
+        if (requestId !== state.requestId) return;
+        state.requestId += 1;
+        setLoading(false);
+        showPanelError('The request timed out. Check your connection and try again.');
+      }, 60000);
+
+      try {
+        runtime.sendMessage(payload, (response) => {
+          window.clearTimeout(timeout);
+          if (requestId !== state.requestId) return;
+          setLoading(false);
+
+          if (runtime.lastError) {
+            showPanelError(disconnectedMessage);
+            return;
+          }
+          if (!response?.success) {
+            showPanelError(response?.message || 'Could not create a draft. Check SmartReply settings.');
+            return;
+          }
+
+          regenerateButton.textContent = 'Regenerate';
+          if (useCustomInstruction) {
+            state.customReply = response.replyText;
+            state.selectedIndex = -1;
+            renderSelectedDraft('Custom draft', response.replyText);
+            optionsList.querySelectorAll('button').forEach((button) => button.classList.remove('smartreply-selected'));
+          } else {
+            state.options = response.options;
+            state.selectedIndex = 0;
+            renderOptions();
+          }
+
+          modelBadge.textContent = response.modelUsed || 'Google Gemini';
+          requestAnimationFrame(() => positionPopover(trigger, popover));
+        });
+      } catch (error) {
+        window.clearTimeout(timeout);
+        if (requestId !== state.requestId) return;
+        setLoading(false);
+        showPanelError(disconnectedMessage);
+      }
+    }
+
+    function renderOptions() {
+      optionsList.replaceChildren();
+      state.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `smartreply-option${index === state.selectedIndex ? ' smartreply-selected' : ''}`;
+        button.setAttribute('aria-pressed', String(index === state.selectedIndex));
+
+        const title = document.createElement('strong');
+        title.textContent = option.title;
+        const description = document.createElement('span');
+        description.textContent = option.description;
+        button.append(title, description);
+
+        button.addEventListener('click', () => {
+          state.selectedIndex = index;
+          state.customReply = '';
+          optionsList.querySelectorAll('button').forEach((item, itemIndex) => {
+            const selected = itemIndex === index;
+            item.classList.toggle('smartreply-selected', selected);
+            item.setAttribute('aria-pressed', String(selected));
+          });
+          renderSelectedDraft(index === 0 ? 'Best fit' : option.title, option.reply);
+        });
+
+        optionsList.appendChild(button);
+      });
+
+      const selected = state.options[state.selectedIndex];
+      if (selected) renderSelectedDraft('Best fit', selected.reply);
+    }
+
+    function renderSelectedDraft(label, reply) {
+      contextLabel.textContent = label;
+      preview.classList.remove('smartreply-error');
+      preview.textContent = reply;
+      insertButton.disabled = !reply;
+    }
+
+    function showPanelError(message) {
+      preview.classList.add('smartreply-error');
+      preview.textContent = message;
+      contextLabel.textContent = 'Needs attention';
+      insertButton.disabled = true;
+      requestAnimationFrame(() => positionPopover(trigger, popover));
+    }
+
+    function setLoading(isLoading, title, subtitle) {
+      if (title) loadingTitle.textContent = title;
+      if (subtitle) loadingSubtitle.textContent = subtitle;
+      loadingOverlay.classList.toggle('smartreply-active', isLoading);
+      loadingOverlay.setAttribute('aria-busy', String(isLoading));
+    }
+  }
+
+  function positionPopover(trigger, popover) {
+    const rect = trigger.getBoundingClientRect();
+    const width = Math.min(420, window.innerWidth - 24);
+    popover.style.width = `${width}px`;
+
+    let left = rect.left - 20;
+    left = Math.max(12, Math.min(left, window.innerWidth - width - 12));
+
+    const height = Math.min(popover.offsetHeight || 600, window.innerHeight - 24);
+    let top = rect.top - height - 10;
+    if (top < 12) top = Math.min(rect.bottom + 8, window.innerHeight - height - 12);
+
+    popover.style.left = `${left}px`;
+    popover.style.top = `${Math.max(12, top)}px`;
+  }
+
+  function closeAllPopovers(except) {
+    document.querySelectorAll('.smartreply-popover').forEach((popover) => {
+      if (popover !== except) popover.classList.add('smartreply-hidden');
+    });
+  }
+
+  function removeOrphanedPopovers() {
+    document.querySelectorAll('.smartreply-popover').forEach((popover) => {
+      if (popover.smartreplyComposeContainer && !popover.smartreplyComposeContainer.isConnected) {
+        popover.remove();
+      }
+    });
+  }
+
+  function applyContentAppearance(element, settings) {
+    const theme = settings.colorTheme === 'rose' ? 'rose' : 'teal';
+    const preference = ['light', 'dark', 'system'].includes(settings.appearanceMode)
+      ? settings.appearanceMode
+      : 'system';
+    const resolvedMode = preference === 'system'
+      ? (systemDarkQuery.matches ? 'dark' : 'light')
+      : preference;
+
+    element.dataset.smartreplyTheme = theme;
+    element.dataset.smartreplyMode = resolvedMode;
+  }
+
+  function refreshContentAppearance() {
+    getLocalSettings(['colorTheme', 'appearanceMode'], (saved) => {
+      document.querySelectorAll('.smartreply-circle-btn, .smartreply-popover').forEach((element) => {
+        applyContentAppearance(element, saved);
+      });
+    });
+  }
+
+  function extractThreadContext(composeContainer) {
+    const subjectElement = document.querySelector('h2.hP, h2[data-thread-perm-id]');
+    const subject = subjectElement?.innerText?.trim() ||
+      document.title.replace(/ - [^ -]+@.+ - Gmail/i, '').replace(/ - Gmail/i, '').trim();
+
+    let messageContainers = [...document.querySelectorAll('div.adn.ads')];
+    if (!messageContainers.length) {
+      messageContainers = [...document.querySelectorAll('div[role="listitem"]')]
+        .filter((element) => element.querySelector('.a3s.aiL, .ii.gt'));
+    }
+
+    const seenBodies = new Set();
+    const messages = [];
+
+    messageContainers.forEach((message, index) => {
+      const body = message.querySelector('.a3s.aiL, .ii.gt');
+      if (!body || (composeContainer.contains(body) && body.isContentEditable)) return;
+
+      const clone = body.cloneNode(true);
+      clone.querySelectorAll('.gmail_quote, .gmail_extra, blockquote, script, style').forEach((element) => element.remove());
+      const text = (clone.innerText || clone.textContent || '').trim();
+      const signature = text.slice(0, 500);
+      if (!text || seenBodies.has(signature)) return;
+      seenBodies.add(signature);
+
+      const senderElement = message.querySelector('.gD, span[email], .zF');
+      const sender = senderElement?.getAttribute('name') || senderElement?.innerText?.trim() || senderElement?.getAttribute('email') || `Participant ${index + 1}`;
+      const time = message.querySelector('.g3, .date')?.innerText?.trim() || '';
+      messages.push({ sender, time, body: text });
+    });
+
+    const recentMessages = messages.slice(-8);
+    const latest = recentMessages.at(-1) || {};
+    const threadHistory = recentMessages
+      .map((message, index) => `[Message ${index + 1} — ${message.sender}${message.time ? ` — ${message.time}` : ''}]\n${message.body}`)
+      .join('\n\n---\n\n')
+      .slice(-24000);
+
+    return {
+      subject: subject.slice(0, 500),
+      sender: String(latest.sender || '').slice(0, 300),
+      latestBody: String(latest.body || '').slice(0, 8000),
+      threadHistory
+    };
+  }
+
+  function findComposeBox(container) {
+    return container.querySelector('div[role="textbox"][contenteditable="true"], div[aria-label*="Message Body"], .Am.Al.editable, div[g_editable="true"]') ||
+      document.querySelector('div[role="textbox"][contenteditable="true"]');
+  }
+
+  function insertReplyText(composeBox, text) {
+    if (!composeBox) {
+      showNotification('Click inside the Gmail reply box, then try again.', 'error');
+      return false;
+    }
+
+    composeBox.focus();
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(composeBox);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const formatted = String(text)
+      .split('\n\n')
+      .map((paragraph) => `<div>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</div>`)
+      .join('<div><br></div>');
+    const spacer = composeBox.innerText.trim() ? '<div><br></div>' : '';
+
+    const inserted = document.execCommand('insertHTML', false, spacer + formatted + '<div><br></div>');
+    if (!inserted) composeBox.insertAdjacentHTML('beforeend', spacer + formatted + '<div><br></div>');
+
+    composeBox.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: text }));
+    return true;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -531,37 +551,36 @@
     if (!toast) {
       toast = document.createElement('div');
       toast.className = 'smartreply-toast';
+      toast.setAttribute('role', 'status');
       document.body.appendChild(toast);
     }
 
     toast.className = `smartreply-toast smartreply-toast-${type} smartreply-toast-show`;
     toast.textContent = message;
-
-    setTimeout(() => {
-      toast.classList.remove('smartreply-toast-show');
-    }, 4500);
+    window.setTimeout(() => toast.classList.remove('smartreply-toast-show'), 4000);
   }
 
-  // Observers & Events
-  const observer = new MutationObserver(() => {
-    scanAndInjectAll();
+  document.addEventListener('click', () => closeAllPopovers());
+  document.addEventListener('focusin', (event) => {
+    if (event.target?.getAttribute?.('contenteditable') === 'true') scheduleScan();
   });
 
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
+  const storageChanges = globalThis.chrome?.storage?.onChanged;
+  if (storageChanges?.addListener) {
+    storageChanges.addListener((changes, areaName) => {
+      if (areaName === 'local' && (changes.colorTheme || changes.appearanceMode)) {
+        refreshContentAppearance();
+      }
+    });
+  }
+
+  systemDarkQuery.addEventListener('change', () => {
+    getLocalSettings(['appearanceMode'], (saved) => {
+      if (!saved.appearanceMode || saved.appearanceMode === 'system') refreshContentAppearance();
+    });
   });
 
-  document.addEventListener('click', () => {
-    setTimeout(scanAndInjectAll, 100);
-  });
-
-  document.addEventListener('focusin', (e) => {
-    if (e.target && e.target.getAttribute && e.target.getAttribute('contenteditable') === 'true') {
-      scanAndInjectAll();
-    }
-  });
-
-  scanAndInjectAll();
-  setInterval(scanAndInjectAll, 800);
+  const observer = new MutationObserver(scheduleScan);
+  observer.observe(document.body, { childList: true, subtree: true });
+  scanAndInject();
 })();
