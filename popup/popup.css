@@ -117,7 +117,7 @@ summary:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 13px 16px;
+  padding: 11px 14px;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
@@ -129,31 +129,64 @@ summary:focus-visible {
 }
 
 .brand img {
-  border-radius: 10px;
+  border-radius: 9px;
   box-shadow: 0 3px 9px rgb(var(--accent-rgb) / 18%);
 }
 
 .brand h1 {
   margin: 0;
   color: var(--ink);
-  font-size: 15px;
-  line-height: 1.25;
+  font-size: 14.5px;
+  line-height: 1.2;
   letter-spacing: -0.2px;
 }
 
 .brand p {
   margin: 2px 0 0;
   color: var(--muted);
-  font-size: 10.5px;
+  font-size: 10px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.icon-tool-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--muted);
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: all 140ms ease;
+}
+
+.icon-tool-button:hover {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border-color: rgb(var(--accent-rgb) / 32%);
+  transform: rotate(25deg);
+
+}
+
+.icon-tool-button svg {
+  width: 15px;
+  height: 15px;
 }
 
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   padding: 5px 8px;
   border-radius: 999px;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -582,23 +615,256 @@ button:disabled {
 
 .button-primary:hover { background: var(--accent-strong); }
 
-.usage-note {
+/* Compact Popup Footer */
+.popup-footer {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin: 0 3px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 0;
   color: var(--muted);
-  text-align: center;
+  font-size: 10px;
 }
 
-#lastModelText { color: var(--muted); font-size: 9.5px; }
+#lastModelText {
+  color: var(--muted);
+  font-size: 9.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link-button {
+  padding: 0;
+  color: var(--accent-text);
+  background: transparent;
+  border: 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+/* Help Drawer Steps & Tips */
+.help-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.help-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border: 1px solid rgb(var(--accent-rgb) / 28%);
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.step-info strong {
+  color: var(--ink);
+  font-size: 11.5px;
+}
+
+.step-info p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.help-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.help-tips p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.help-tips strong {
+  color: var(--ink);
+}
+
+/* Collapsible Key Card Specifics */
+.key-body {
+  padding: 11px 12px 12px;
+  border-top: 1px solid var(--privacy-border);
+}
+
+.key-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 10px;
+}
+
+.key-helper {
+  color: var(--privacy-muted);
+  font-weight: 600;
+}
+
+.key-top-row a {
+  color: var(--accent-text);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.key-top-row a:hover {
+  text-decoration: underline;
+}
+
+.key-state {
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 750;
+}
+
+.key-state-verified {
+  color: #23644f;
+  background: #e0f2ea;
+}
+
+.key-state-checking {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+}
+
+.key-state-missing {
+  color: #805321;
+  background: #f7e8cf;
+}
+
+.key-state-error {
+  color: #a2403a;
+  background: #fce8e6;
+}
+
+:root[data-mode="dark"] .key-state-verified { color: #a7e5ce; background: #244838; }
+:root[data-mode="dark"] .key-state-checking { color: var(--accent-text); background: var(--accent-soft); }
+:root[data-mode="dark"] .key-state-missing { color: #f3cd92; background: #4a3822; }
+:root[data-mode="dark"] .key-state-error { color: #ffaaa2; background: #4a2522; }
+
+/* Preferences & Models Drawer */
+.popup-shell {
+  position: relative;
+  min-height: 100%;
+}
+
+.settings-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: var(--page);
+  transform: translateX(100%);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  visibility: hidden;
+}
+
+.settings-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.drawer-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+}
+
+.drawer-title svg {
+  color: var(--accent-text);
+}
+
+.drawer-title h2 {
+  font-size: 13.5px;
+  margin: 0;
+}
+
+.close-drawer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--muted);
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 120ms ease;
+}
+
+.close-drawer-btn:hover {
+  color: var(--ink);
+  background: var(--line);
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drawer-content .settings-section {
+  padding: 12px;
+}
 
 .toast {
   position: fixed;
   right: 16px;
   bottom: 14px;
   left: 16px;
-  z-index: 10;
+  z-index: 30;
   padding: 9px 11px;
   color: #fff;
   background: var(--toast);

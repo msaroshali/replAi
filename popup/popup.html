@@ -10,15 +10,23 @@
   <div class="popup-shell">
     <header class="header">
       <div class="brand">
-        <img src="../icons/icon48.png" width="36" height="36" alt="">
+        <img src="../icons/icon48.png" width="34" height="34" alt="">
         <div>
           <h1>SmartReply AI</h1>
           <p>Bring your own Gemini key</p>
         </div>
       </div>
-      <div id="statusBadge" class="status-badge status-warning">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span id="statusText">Set up</span>
+      <div class="header-actions">
+        <div id="statusBadge" class="status-badge status-warning">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="statusText">Set up</span>
+        </div>
+        <button type="button" id="toggleHelpBtn" class="icon-tool-button" aria-label="How to use SmartReply" title="How to use SmartReply">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button type="button" id="toggleSettingsBtn" class="icon-tool-button" aria-label="Preferences & Models" title="Preferences & Models">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        </button>
       </div>
     </header>
 
@@ -28,6 +36,7 @@
         <p>SmartReply reads the current thread only when you ask for a draft. It never sends email.</p>
       </section>
 
+      <!-- Privacy Details Collapsible Card -->
       <details class="privacy-card" id="privacyDetails">
         <summary>
           <span class="privacy-summary-copy">
@@ -45,27 +54,34 @@
         </div>
       </details>
 
-      <section class="settings-section" aria-labelledby="connectionTitle">
-        <div class="section-heading">
-          <div>
-            <div class="section-kicker">Connection</div>
-            <h2 id="connectionTitle">Gemini API key</h2>
+      <!-- API Key Collapsible Card -->
+      <details class="privacy-card key-card" id="keyDetails">
+        <summary>
+          <span class="privacy-summary-copy">
+            <span class="section-kicker">Connection</span>
+            <strong id="keySummaryText">Gemini API key</strong>
+          </span>
+          <span class="key-state" id="keyState">Not set</span>
+        </summary>
+        <div class="key-body">
+          <div class="key-top-row">
+            <span class="key-helper">Enter your API key below:</span>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">Get a key ↗</a>
           </div>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">Get a key ↗</a>
+          <div class="key-row">
+            <input type="password" id="apiKey" placeholder="Paste your Gemini API key" autocomplete="off" spellcheck="false">
+            <button type="button" id="toggleKeyVisibility" class="icon-button" aria-label="Show API key">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
+            </button>
+          </div>
+          <div class="verification-row">
+            <span id="testResult" class="test-message info" role="status">Paste a key and it will be checked automatically.</span>
+            <button type="button" id="testKeyBtn" class="button-secondary">Check now</button>
+          </div>
         </div>
+      </details>
 
-        <div class="key-row">
-          <input type="password" id="apiKey" placeholder="Paste your Gemini API key" autocomplete="off" spellcheck="false">
-          <button type="button" id="toggleKeyVisibility" class="icon-button" aria-label="Show API key">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
-          </button>
-        </div>
-        <div class="verification-row">
-          <span id="testResult" class="test-message info" role="status">Paste a key and it will be checked automatically.</span>
-          <button type="button" id="testKeyBtn" class="button-secondary">Check now</button>
-        </div>
-      </section>
-
+      <!-- Draft Defaults -->
       <section class="settings-section" aria-labelledby="defaultsTitle">
         <div class="section-kicker">Draft defaults</div>
         <h2 id="defaultsTitle">How replies should sound</h2>
@@ -99,50 +115,134 @@
         </label>
       </section>
 
-      <section class="settings-section appearance-section" aria-labelledby="appearanceTitle">
-        <div class="section-kicker">Appearance</div>
-        <h2 id="appearanceTitle">Make it feel like yours</h2>
-        <div class="field-grid">
-          <label>Color theme
-            <select id="colorTheme">
-              <option value="teal">Teal</option>
-              <option value="rose">Rose</option>
-            </select>
-          </label>
-          <label>Mode
-            <select id="appearanceMode">
-              <option value="system">Follow system</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
-          </label>
-        </div>
-        <div class="theme-preview" aria-hidden="true"><span></span><span></span><span></span><em>Live preview</em></div>
-      </section>
-
-      <details class="advanced-section">
-        <summary>Advanced model settings</summary>
-        <label class="field-label">Primary model
-          <select id="selectedModel">
-            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite — default</option>
-            <option value="gemini-3.7-flash">Gemini 3.7 Flash — highest quality</option>
-            <option value="gemini-3.6-flash">Gemini 3.6 Flash — balanced</option>
-            <option value="gemini-3.5-flash">Gemini 3.5 Flash — legacy stable</option>
-            <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
-            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
-            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-          </select>
-        </label>
-        <p>SmartReply falls back only when a model is unavailable or rate-limited.</p>
-      </details>
-
       <button type="button" id="saveBtn" class="button-primary">Save settings</button>
 
-      <div class="usage-note">
-        <span>In Gmail: open Reply → click the SmartReply mark → review a draft → insert.</span>
-        <span id="lastModelText"></span>
+      <div class="popup-footer">
+        <span id="lastModelText">No drafts generated yet.</span>
+        <button type="button" id="openHelpLink" class="link-button">How to use ↗</button>
       </div>
     </main>
+
+    <!-- Slide-over How-To-Use Help Drawer -->
+    <div id="helpPanel" class="settings-drawer" aria-hidden="true">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" stroke-linecap="round"/>
+          </svg>
+          <h2>How to Use SmartReply</h2>
+        </div>
+        <button type="button" id="closeHelpBtn" class="close-drawer-btn" aria-label="Close help">✕</button>
+      </div>
+      <div class="drawer-content">
+        <section class="settings-section">
+          <div class="section-kicker">Step by Step</div>
+          <ol class="help-steps">
+            <li>
+              <div class="step-badge">1</div>
+              <div class="step-info">
+                <strong>Open Reply in Gmail</strong>
+                <p>Open an email and click <em>Reply</em> or <em>Reply All</em>.</p>
+              </div>
+            </li>
+            <li>
+              <div class="step-badge">2</div>
+              <div class="step-info">
+                <strong>Click the SmartReply icon</strong>
+                <p>Find the SmartReply icon in your compose toolbar right next to Gmail's <em>Send</em> button.</p>
+              </div>
+            </li>
+            <li>
+              <div class="step-badge">3</div>
+              <div class="step-info">
+                <strong>Select contextual reply options</strong>
+                <p>SmartReply generates multiple response choices. Select any response to preview its complete draft.</p>
+              </div>
+            </li>
+            <li>
+              <div class="step-badge">4</div>
+              <div class="step-info">
+                <strong>Insert &amp; review yourself</strong>
+                <p>Click <em>Insert draft</em> to place the text into Gmail. You always review before sending.</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section class="settings-section">
+          <div class="section-kicker">Pro Tips</div>
+          <div class="help-tips">
+            <p>💡 <strong>Custom Instructions:</strong> Type notes like <em>"Agree to 2pm on Thursday"</em> to guide the draft.</p>
+            <p>🔒 <strong>Privacy:</strong> Thread content is sent to Gemini only when you open the draft panel by clicking the icon.</p>
+          </div>
+        </section>
+
+        <button type="button" id="doneHelpBtn" class="button-primary">Got it</button>
+      </div>
+    </div>
+
+    <!-- Slide-over Preferences & Models Drawer -->
+    <div id="settingsPanel" class="settings-drawer" aria-hidden="true">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          <h2>Preferences &amp; Models</h2>
+        </div>
+        <button type="button" id="closeSettingsBtn" class="close-drawer-btn" aria-label="Close preferences">✕</button>
+      </div>
+      <div class="drawer-content">
+        <section class="settings-section appearance-section">
+          <div class="section-kicker">Appearance</div>
+          <h2>Theme &amp; Mode</h2>
+          <div class="field-grid">
+            <label>Color theme
+              <select id="colorTheme">
+                <option value="teal">Teal</option>
+                <option value="rose">Rose</option>
+              </select>
+            </label>
+            <label>Mode
+              <select id="appearanceMode">
+                <option value="system">Follow system</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
+          </div>
+          <div class="theme-preview" aria-hidden="true"><span></span><span></span><span></span><em>Live preview</em></div>
+        </section>
+
+        <section class="settings-section model-section">
+          <div class="section-kicker">Model Selection</div>
+          <h2>Gemini Primary Model</h2>
+          <label class="field-label">Model
+            <select id="selectedModel">
+              <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite — default</option>
+              <option value="gemini-3.7-flash">Gemini 3.7 Flash — highest quality</option>
+              <option value="gemini-3.6-flash">Gemini 3.6 Flash — balanced</option>
+              <option value="gemini-3.5-flash">Gemini 3.5 Flash — legacy stable</option>
+              <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
+              <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+            </select>
+          </label>
+          <p>SmartReply automatically falls back to secondary models if your primary choice is rate-limited or unavailable.</p>
+        </section>
+
+        <section class="settings-section debug-section">
+          <div class="section-kicker">Developer &amp; Debugging</div>
+          <h2>Console Logs</h2>
+          <label class="toggle-row">
+            <input type="checkbox" id="debugMode">
+            <span class="toggle-track" aria-hidden="true"></span>
+            <span>Log thread &amp; API requests to console</span>
+          </label>
+          <p>Outputs full email thread context, prompts, and Gemini payloads to browser DevTools (F12) for inspection.</p>
+        </section>
+
+        <button type="button" id="doneSettingsBtn" class="button-primary">Done</button>
+      </div>
+    </div>
 
     <div id="toast" class="toast" role="status"></div>
   </div>
