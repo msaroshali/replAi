@@ -149,3 +149,28 @@ test('a key can be verified before email data sharing is enabled', async () => {
   assert.equal(url.includes('test-key-that-is-long-enough'), false);
   assert.equal(request.headers['x-goog-api-key'], 'test-key-that-is-long-enough');
 });
+
+test('debugMode logs payloads without affecting generation flow', async () => {
+  const options = Array.from({ length: 4 }, (_, index) => ({
+    id: `option_${index + 1}`,
+    title: `Option ${index + 1}`,
+    description: 'Description',
+    reply: `Reply ${index + 1}`
+  }));
+  const worker = loadWorker({
+    geminiApiKey: 'secret-key',
+    privacyConsentAccepted: true,
+    selectedModel: 'gemini-3.5-flash-lite',
+    debugMode: true
+  }, async () => successResponse({ options }));
+
+  const response = await worker.send({
+    action: 'ANALYZE_AND_PREGENERATE',
+    subject: 'Debug test',
+    sender: 'Dev',
+    threadHistory: 'Email content for debug inspection.'
+  });
+
+  assert.equal(response.success, true);
+  assert.equal(response.options.length, 4);
+});
