@@ -315,42 +315,58 @@
         showPanelError('The request timed out. Check your connection and try again.');
       }, 60000);
 
-      try {
-        runtime.sendMessage(payload, (response) => {
+      getLocalSettings(['debugMode'], (saved) => {
+        if (saved.debugMode) {
+          console.groupCollapsed(`%c[SmartReply AI Debug] ✉️ Sending Email Thread to Gemini (${payload.action})`, 'color: #0f6a6d; font-weight: bold;');
+          console.log('Subject:', state.context.subject);
+          console.log('Sender:', state.context.sender);
+          console.log('Latest Body:\n', state.context.latestBody);
+          console.log('Thread History:\n', state.context.threadHistory);
+          console.log('Full Request Payload:\n', payload);
+          console.groupEnd();
+        }
+
+        try {
+          runtime.sendMessage(payload, (response) => {
+            window.clearTimeout(timeout);
+            if (requestId !== state.requestId) return;
+            setLoading(false);
+
+            if (saved.debugMode) {
+              console.log('%c[SmartReply AI Debug] ✨ Response from Background / Gemini:', 'color: #207659; font-weight: bold;', response);
+            }
+
+            if (runtime.lastError) {
+              showPanelError(disconnectedMessage);
+              return;
+            }
+            if (!response?.success) {
+              showPanelError(response?.message || 'Could not create a draft. Check SmartReply settings.');
+              return;
+            }
+
+            regenerateButton.textContent = 'Regenerate';
+            if (useCustomInstruction) {
+              state.customReply = response.replyText;
+              state.selectedIndex = -1;
+              renderSelectedDraft('Custom draft', response.replyText);
+              optionsList.querySelectorAll('button').forEach((button) => button.classList.remove('smartreply-selected'));
+            } else {
+              state.options = response.options;
+              state.selectedIndex = 0;
+              renderOptions();
+            }
+
+            modelBadge.textContent = response.modelUsed || 'Google Gemini';
+            requestAnimationFrame(() => positionPopover(trigger, popover));
+          });
+        } catch (error) {
           window.clearTimeout(timeout);
           if (requestId !== state.requestId) return;
           setLoading(false);
-
-          if (runtime.lastError) {
-            showPanelError(disconnectedMessage);
-            return;
-          }
-          if (!response?.success) {
-            showPanelError(response?.message || 'Could not create a draft. Check SmartReply settings.');
-            return;
-          }
-
-          regenerateButton.textContent = 'Regenerate';
-          if (useCustomInstruction) {
-            state.customReply = response.replyText;
-            state.selectedIndex = -1;
-            renderSelectedDraft('Custom draft', response.replyText);
-            optionsList.querySelectorAll('button').forEach((button) => button.classList.remove('smartreply-selected'));
-          } else {
-            state.options = response.options;
-            state.selectedIndex = 0;
-            renderOptions();
-          }
-
-          modelBadge.textContent = response.modelUsed || 'Google Gemini';
-          requestAnimationFrame(() => positionPopover(trigger, popover));
-        });
-      } catch (error) {
-        window.clearTimeout(timeout);
-        if (requestId !== state.requestId) return;
-        setLoading(false);
-        showPanelError(disconnectedMessage);
-      }
+          showPanelError(disconnectedMessage);
+        }
+      });
     }
 
     function renderOptions() {
