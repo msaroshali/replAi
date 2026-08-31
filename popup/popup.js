@@ -32,14 +32,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const colorThemeSelect = document.getElementById('colorTheme');
   const appearanceModeSelect = document.getElementById('appearanceMode');
   const debugCheckbox = document.getElementById('debugMode');
+  const debugFullContentCheckbox = document.getElementById('debugFullContent');
+  const debugSubOptions = document.getElementById('debugSubOptions');
+  const debugWarningBanner = document.getElementById('debugWarningBanner');
+
   const toggleSettingsBtn = document.getElementById('toggleSettingsBtn');
   const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-  const doneSettingsBtn = document.getElementById('doneSettingsBtn');
   const settingsPanel = document.getElementById('settingsPanel');
 
   const toggleHelpBtn = document.getElementById('toggleHelpBtn');
   const closeHelpBtn = document.getElementById('closeHelpBtn');
-  const doneHelpBtn = document.getElementById('doneHelpBtn');
   const openHelpLink = document.getElementById('openHelpLink');
   const helpPanel = document.getElementById('helpPanel');
 
@@ -53,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let verificationRequestId = 0;
   let verificationState = 'idle';
   let verifiedSignature = '';
+  let lastFocusedTrigger = null;
 
   chrome.storage.local.get([
     'geminiApiKey',
@@ -65,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'colorTheme',
     'appearanceMode',
     'debugMode',
+    'debugFullContent',
     'apiKeyVerified',
     'verifiedModel',
     'lastUsedModel'
@@ -79,8 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
     colorThemeSelect.value = saved.colorTheme === 'rose' ? 'rose' : 'teal';
     appearanceModeSelect.value = ['light', 'dark', 'system'].includes(saved.appearanceMode) ? saved.appearanceMode : 'system';
     debugCheckbox.checked = saved.debugMode === true;
+    if (debugFullContentCheckbox) debugFullContentCheckbox.checked = saved.debugFullContent === true;
 
     applyAppearance();
+    updateDebugUI();
     updateConsentSummary();
     privacyDetails.open = !consentCheckbox.checked;
 
@@ -130,55 +136,98 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStatus();
   });
 
-  modelSelect.addEventListener('change', () => {
-    verifiedSignature = '';
-    verificationState = 'idle';
-    if (apiKeyInput.value.trim().length >= 16) queueKeyVerification(250);
-    updateKeySummary();
-    updateStatus();
-  });
-
   consentCheckbox.addEventListener('change', () => {
     updateConsentSummary();
     updateStatus();
   });
 
-  // Settings Drawer Handlers
-  toggleSettingsBtn.addEventListener('click', () => {
-    closeHelpDrawer();
-    settingsPanel.classList.add('open');
-    settingsPanel.setAttribute('aria-hidden', 'false');
+  // Drawer Control Changes Auto-Save
+  colorThemeSelect.addEventListener('change', () => {
+    applyAppearance();
+    saveDrawerSettings();
   });
 
-  const closeSettingsDrawer = () => {
+  appearanceModeSelect.addEventListener('change', () => {
+    applyAppearance();
+    saveDrawerSettings();
+  });
+
+  systemDarkQuery.addEventListener('change', () => {
+    if (appearanceModeSelect.value === 'system') applyAppearance();
+  });
+
+  modelSelect.addEventListener('change', () => {
+    verifiedSignature = '';
+    verificationState = 'idle';
+    saveDrawerSettings();
+    if (apiKeyInput.value.trim().length >= 16) queueKeyVerification(250);
+    updateKeySummary();
+    updateStatus();
+  });
+
+  debugCheckbox.addEventListener('change', () => {
+    updateDebugUI();
+    saveDrawerSettings();
+  });
+
+  if (debugFullContentCheckbox) {
+    debugFullContentCheckbox.addEventListener('change', () => {
+      saveDrawerSettings();
+    });
+  }
+
+  // Drawer Open / Close Handlers with Keyboard Accessibility
+  const openSettingsDrawer = () => {
+    lastFocusedTrigger = document.activeElement;
+    closeHelpDrawer(false);
+    settingsPanel.classList.add('open');
+    settingsPanel.setAttribute('aria-hidden', 'false');
+    closeSettingsBtn.focus();
+  };
+
+  const closeSettingsDrawer = (restoreFocus = true) => {
     settingsPanel.classList.remove('open');
     settingsPanel.setAttribute('aria-hidden', 'true');
+    if (restoreFocus && lastFocusedTrigger?.focus) {
+      lastFocusedTrigger.focus();
+      lastFocusedTrigger = null;
+    }
   };
 
-  closeSettingsBtn.addEventListener('click', closeSettingsDrawer);
-  doneSettingsBtn.addEventListener('click', closeSettingsDrawer);
-
-  // Help Drawer Handlers
   const openHelpDrawer = () => {
-    closeSettingsDrawer();
+    lastFocusedTrigger = document.activeElement;
+    closeSettingsDrawer(false);
     helpPanel.classList.add('open');
     helpPanel.setAttribute('aria-hidden', 'false');
+    closeHelpBtn.focus();
   };
 
-  const closeHelpDrawer = () => {
+  const closeHelpDrawer = (restoreFocus = true) => {
     helpPanel.classList.remove('open');
     helpPanel.setAttribute('aria-hidden', 'true');
+    if (restoreFocus && lastFocusedTrigger?.focus) {
+      lastFocusedTrigger.focus();
+      lastFocusedTrigger = null;
+    }
   };
+
+  toggleSettingsBtn.addEventListener('click', openSettingsDrawer);
+  closeSettingsBtn.addEventListener('click', () => closeSettingsDrawer(true));
 
   toggleHelpBtn.addEventListener('click', openHelpDrawer);
   if (openHelpLink) openHelpLink.addEventListener('click', openHelpDrawer);
-  closeHelpBtn.addEventListener('click', closeHelpDrawer);
-  doneHelpBtn.addEventListener('click', closeHelpDrawer);
+  closeHelpBtn.addEventListener('click', () => closeHelpDrawer(true));
 
-  colorThemeSelect.addEventListener('change', applyAppearance);
-  appearanceModeSelect.addEventListener('change', applyAppearance);
-  systemDarkQuery.addEventListener('change', () => {
-    if (appearanceModeSelect.value === 'system') applyAppearance();
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      if (settingsPanel.classList.contains('open')) {
+        event.preventDefault();
+        closeSettingsDrawer(true);
+      } else if (helpPanel.classList.contains('open')) {
+        event.preventDefault();
+        closeHelpDrawer(true);
+      }
+    }
   });
 
   testKeyButton.addEventListener('click', verifyKey);
@@ -197,12 +246,14 @@ document.addEventListener('DOMContentLoaded', () => {
       colorTheme: colorThemeSelect.value === 'rose' ? 'rose' : 'teal',
       appearanceMode: ['light', 'dark', 'system'].includes(appearanceModeSelect.value) ? appearanceModeSelect.value : 'system',
       debugMode: debugCheckbox.checked,
+      debugFullContent: debugCheckbox.checked && (debugFullContentCheckbox ? debugFullContentCheckbox.checked : false),
       apiKeyVerified: keyIsVerified,
       verifiedModel: keyIsVerified ? modelSelect.value : ''
     };
 
     chrome.storage.local.set(settings, () => {
       updateConsentSummary();
+      updateDebugUI();
       updateKeySummary();
       privacyDetails.open = !settings.privacyConsentAccepted;
       if (keyIsVerified) keyDetails.open = false;
@@ -219,6 +270,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  function saveDrawerSettings(showFeedback = false) {
+    const drawerSettings = {
+      colorTheme: colorThemeSelect.value === 'rose' ? 'rose' : 'teal',
+      appearanceMode: ['light', 'dark', 'system'].includes(appearanceModeSelect.value) ? appearanceModeSelect.value : 'system',
+      selectedModel: modelSelect.value || DEFAULT_MODEL,
+      debugMode: debugCheckbox.checked,
+      debugFullContent: debugCheckbox.checked && (debugFullContentCheckbox ? debugFullContentCheckbox.checked : false)
+    };
+
+    chrome.storage.local.set(drawerSettings, () => {
+      updateDebugUI();
+      updateKeySummary();
+      updateStatus();
+      if (showFeedback) showToast('Preferences updated.');
+    });
+  }
 
   function queueKeyVerification(delay) {
     window.clearTimeout(verificationTimer);
@@ -275,6 +343,17 @@ document.addEventListener('DOMContentLoaded', () => {
         verifiedSignature = signature;
         showTestResult('success', `Connected with ${response.workingModel}.`);
         keyDetails.open = false;
+
+        // Auto-save the verified key immediately so closing the popup doesn't lose it
+        chrome.storage.local.set({
+          geminiApiKey: apiKey,
+          apiKeyVerified: true,
+          verifiedModel: response.workingModel || modelSelect.value
+        }, () => {
+          updateKeySummary();
+          updateStatus();
+          showToast('Gemini API key saved & connected.');
+        });
       } else {
         verificationState = 'error';
         verifiedSignature = '';
@@ -301,6 +380,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.mode = resolvedMode;
+  }
+
+  function updateDebugUI() {
+    const isDebug = debugCheckbox.checked;
+    if (debugSubOptions) debugSubOptions.hidden = !isDebug;
+    if (debugWarningBanner) debugWarningBanner.hidden = !isDebug;
   }
 
   function updateConsentSummary() {

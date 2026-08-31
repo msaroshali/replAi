@@ -40,9 +40,17 @@ function loadWorker(initialStorage = {}, fetchImpl = async () => {
     }
   };
 
+  const quietConsole = {
+    log() {},
+    groupCollapsed() {},
+    groupEnd() {},
+    error() {},
+    warn() {}
+  };
+
   const context = vm.createContext({
     chrome,
-    console,
+    console: quietConsole,
     Date,
     Error,
     JSON,

@@ -315,15 +315,27 @@
         showPanelError('The request timed out. Check your connection and try again.');
       }, 60000);
 
-      getLocalSettings(['debugMode'], (saved) => {
+      getLocalSettings(['debugMode', 'debugFullContent'], (saved) => {
         if (saved.debugMode) {
-          console.groupCollapsed(`%c[SmartReply AI Debug] ✉️ Sending Email Thread to Gemini (${payload.action})`, 'color: #0f6a6d; font-weight: bold;');
-          console.log('Subject:', state.context.subject);
-          console.log('Sender:', state.context.sender);
-          console.log('Latest Body:\n', state.context.latestBody);
-          console.log('Thread History:\n', state.context.threadHistory);
-          console.log('Full Request Payload:\n', payload);
-          console.groupEnd();
+          if (saved.debugFullContent) {
+            console.groupCollapsed(`%c[SmartReply AI Debug] ✉️ Sending Email Thread to Gemini (${payload.action})`, 'color: #0f6a6d; font-weight: bold;');
+            console.log('Subject:', state.context.subject);
+            console.log('Sender:', state.context.sender);
+            console.log('Latest Body:\n', state.context.latestBody);
+            console.log('Thread History:\n', state.context.threadHistory);
+            console.log('Full Request Payload:\n', payload);
+            console.groupEnd();
+          } else {
+            console.groupCollapsed(`%c[SmartReply AI Debug] ✉️ Requesting Drafts (${payload.action})`, 'color: #0f6a6d; font-weight: bold;');
+            console.log('Subject length:', state.context.subject ? `${state.context.subject.length} chars` : '0 chars');
+            console.log('Sender:', state.context.sender || 'Unknown');
+            console.log('Thread history size:', state.context.threadHistory ? `${state.context.threadHistory.length} chars` : '0 chars');
+            console.log('Latest email body size:', state.context.latestBody ? `${state.context.latestBody.length} chars` : '0 chars');
+            console.log('Tone:', payload.toneOverride, '| Length:', payload.lengthOverride);
+            if (useCustomInstruction) console.log('Custom instruction length:', instruction.length);
+            console.log('🔒 Full email text omitted for privacy. Enable "Include full email text in logs" in Settings to inspect raw text.');
+            console.groupEnd();
+          }
         }
 
         try {
@@ -333,7 +345,16 @@
             setLoading(false);
 
             if (saved.debugMode) {
-              console.log('%c[SmartReply AI Debug] ✨ Response from Background / Gemini:', 'color: #207659; font-weight: bold;', response);
+              if (saved.debugFullContent) {
+                console.log('%c[SmartReply AI Debug] ✨ Response from Background / Gemini:', 'color: #207659; font-weight: bold;', response);
+              } else {
+                console.log('%c[SmartReply AI Debug] ✨ Drafts received:', 'color: #207659; font-weight: bold;', {
+                  success: response?.success,
+                  modelUsed: response?.modelUsed,
+                  optionCount: response?.options?.length,
+                  hasCustomReply: Boolean(response?.replyText)
+                });
+              }
             }
 
             if (runtime.lastError) {
