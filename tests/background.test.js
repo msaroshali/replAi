@@ -158,6 +158,34 @@ test('a key can be verified before email data sharing is enabled', async () => {
   assert.equal(request.headers['x-goog-api-key'], 'test-key-that-is-long-enough');
 });
 
+test('reasoning models with thinking tokens pass verification without empty response error', async () => {
+  const worker = loadWorker({ privacyConsentAccepted: false }, async () => ({
+    ok: true,
+    status: 200,
+    async json() {
+      return {
+        candidates: [{
+          content: { parts: [{ text: 'OK', thoughtSignature: 'sig123' }] },
+          finishReason: 'STOP'
+        }],
+        usageMetadata: { thoughtsTokenCount: 77, candidatesTokenCount: 1 }
+      };
+    }
+  }));
+
+  const response = await worker.send({
+    action: 'TEST_API_KEY',
+    apiKey: 'test-key-that-is-long-enough',
+    model: 'gemini-3.8-flash'
+  });
+
+  assert.equal(response.success, true);
+  assert.equal(response.workingModel, 'gemini-3.8-flash');
+  const [, request] = worker.fetchCalls[0];
+  const payload = JSON.parse(request.body);
+  assert.equal(payload.generationConfig.maxOutputTokens, 256);
+});
+
 test('debugMode logs payloads without affecting generation flow', async () => {
   const options = Array.from({ length: 4 }, (_, index) => ({
     id: `option_${index + 1}`,

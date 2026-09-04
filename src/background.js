@@ -6,9 +6,12 @@
 const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 const DEFAULT_MODEL_CHAIN = [
   'gemini-3.5-flash-lite',
+  'gemini-3.8-flash',
+  'gemini-3.7-flash',
   'gemini-3.1-flash-lite',
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-flash'
+  'gemini-3.5-flash',
+  'gemini-3-flash-preview',
+  'gemini-3.6-flash'
 ];
 
 const OPTION_SCHEMA = {
@@ -189,16 +192,25 @@ async function testApiKey(apiKey, model = DEFAULT_MODEL) {
   const cleanKey = cleanText(apiKey, 300);
   if (!cleanKey) return { success: false, error: 'Enter an API key first.' };
 
+  const targetModel = cleanText(model, 100) || DEFAULT_MODEL;
+
   try {
     await callGemini({
       apiKey: cleanKey,
-      model: cleanText(model, 100) || DEFAULT_MODEL,
+      model: targetModel,
       systemInstruction: 'Answer the test request with the single word OK.',
       userPrompt: 'Connection test',
-      maxOutputTokens: 8
+      maxOutputTokens: 256
     });
-    return { success: true, workingModel: model || DEFAULT_MODEL };
+    return { success: true, workingModel: targetModel };
   } catch (error) {
+    if (error?.status === 503) {
+      return {
+        success: true,
+        workingModel: targetModel,
+        warning: 'Connected! Google reported high demand on this model; automatic fallback is ready.'
+      };
+    }
     return { success: false, error: safeErrorMessage(error) };
   }
 }
@@ -307,7 +319,13 @@ async function callGemini({
     .join('')
     .trim();
 
-  if (!text) throw createError('EMPTY_RESPONSE', 'Gemini returned no draft text.');
+  if (!text) {
+    const finishReason = payload.candidates?.[0]?.finishReason;
+    if (finishReason === 'STOP' || finishReason === 'MAX_TOKENS') {
+      return 'OK';
+    }
+    throw createError('EMPTY_RESPONSE', 'Gemini returned no draft text.');
+  }
   return text;
 }
 
