@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="en" data-theme="teal" data-mode="light">
+<html lang="en" data-theme="rose" data-mode="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SmartReply AI settings</title>
+  <title>bunnyReplai settings</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="popup-shell">
     <header class="header">
       <div class="brand">
-        <img src="../icons/icon48.png" width="34" height="34" alt="">
+        <img src="../icons/icon48.png" width="34" height="34" alt="bunnyReplai logo">
         <div>
-          <h1>SmartReply AI</h1>
+          <h1>bunnyReplai</h1>
           <p>Bring your own Gemini key</p>
         </div>
       </div>
@@ -21,7 +21,7 @@
           <span class="status-dot" aria-hidden="true"></span>
           <span id="statusText">Set up</span>
         </div>
-        <button type="button" id="toggleHelpBtn" class="icon-tool-button" aria-label="How to use SmartReply" title="How to use SmartReply">
+        <button type="button" id="toggleHelpBtn" class="icon-tool-button" aria-label="How to use bunnyReplai" title="How to use bunnyReplai">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
         <button type="button" id="toggleSettingsBtn" class="icon-tool-button" aria-label="Preferences & Models" title="Preferences & Models">
@@ -38,7 +38,7 @@
     <main class="content">
       <section class="intro-card">
         <strong>Draft inside Gmail. Decide before inserting.</strong>
-        <p>SmartReply reads the current thread only when you ask for a draft. It never sends email.</p>
+        <p>bunnyReplai reads the current thread only when you ask for a draft. It never sends email.</p>
       </section>
 
       <!-- Privacy Details Collapsible Card -->
@@ -132,10 +132,8 @@
     <div id="helpPanel" class="settings-drawer" role="dialog" aria-modal="true" aria-labelledby="helpDrawerTitle" aria-hidden="true">
       <div class="drawer-header">
         <div class="drawer-title">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" stroke-linecap="round"/>
-          </svg>
-          <h2 id="helpDrawerTitle">How to Use SmartReply</h2>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <h2 id="helpDrawerTitle">How to Use bunnyReplai</h2>
         </div>
         <button type="button" id="closeHelpBtn" class="close-drawer-btn" aria-label="Close help">✕</button>
       </div>
@@ -153,15 +151,15 @@
             <li>
               <div class="step-badge">2</div>
               <div class="step-info">
-                <strong>Click the SmartReply icon</strong>
-                <p>Find the SmartReply icon in your compose toolbar right next to Gmail's <em>Send</em> button.</p>
+                <strong>Click the bunnyReplai icon</strong>
+                <p>Find the bunnyReplai icon in your compose toolbar right next to Gmail's <em>Send</em> button.</p>
               </div>
             </li>
             <li>
               <div class="step-badge">3</div>
               <div class="step-info">
                 <strong>Select contextual reply options</strong>
-                <p>SmartReply generates multiple response choices. Select any response to preview its complete draft.</p>
+                <p>bunnyReplai generates multiple response choices. Select any response to preview its complete draft.</p>
               </div>
             </li>
             <li>
@@ -200,8 +198,8 @@
           <div class="field-grid">
             <label>Color theme
               <select id="colorTheme">
+                <option value="rose" selected>Pink (Rose) — default</option>
                 <option value="teal">Teal</option>
-                <option value="rose">Rose</option>
               </select>
             </label>
             <label>Mode

@@ -1,9 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
-  <title id="title">SmartReply AI</title>
-  <desc id="desc">A white reply card and return mark on a teal rounded square.</desc>
-  <rect x="12" y="12" width="104" height="104" rx="31" fill="#0f6a6d"/>
-  <path d="M37 34h54a14 14 0 0 1 14 14v32a14 14 0 0 1-14 14H64L43 109V94h-6a14 14 0 0 1-14-14V48a14 14 0 0 1 14-14Z" fill="#fff"/>
-  <path d="M42 52h41M42 64h29" fill="none" stroke="#0f6a6d" stroke-width="6" stroke-linecap="round"/>
-  <path d="M87 79H62" fill="none" stroke="#0f6a6d" stroke-width="6" stroke-linecap="round"/>
-  <path d="m66 69-13 10 13 10Z" fill="#0f6a6d"/>
+  <title id="title">bunnyReplai</title>
+  <desc id="desc">bunnyReplai rabbit ears logo in vibrant pink.</desc>
+  <rect x="10" y="10" width="108" height="108" rx="30" fill="#d84a7e"/>
+  <!-- Left Ear -->
+  <path d="M44 80 C31 58 27 28 42 16 C48 12 54 16 56 25 C60 42 56 65 52 80 Z" fill="#ffffff"/>
+  <path d="M45 75 C37 56 35 34 44 23 C47 20 50 23 51 28 C53 40 50 62 48 75 Z" fill="#ffb8d1"/>
+  <!-- Right Ear -->
+  <path d="M76 80 C72 65 68 42 72 25 C74 16 80 12 86 16 C101 28 97 58 84 80 Z" fill="#ffffff"/>
+  <path d="M80 75 C78 62 75 40 77 28 C78 23 81 20 84 23 C93 34 91 56 83 75 Z" fill="#ffb8d1"/>
+  <!-- Head -->
+  <ellipse cx="64" cy="91" rx="34" ry="25" fill="#ffffff"/>
+  <!-- Eyes -->
+  <ellipse cx="51" cy="87" rx="3" ry="3.5" fill="#441424"/>
+  <circle cx="50" cy="85.5" r="1" fill="#ffffff"/>
+  <ellipse cx="77" cy="87" rx="3" ry="3.5" fill="#441424"/>
+  <circle cx="76" cy="85.5" r="1" fill="#ffffff"/>
+  <!-- Cheeks -->
+  <ellipse cx="41.5" cy="90.5" rx="3.5" ry="2.5" fill="#ffb8d1"/>
+  <ellipse cx="86.5" cy="90.5" rx="3.5" ry="2.5" fill="#ffb8d1"/>
+  <!-- Nose & Mouth -->
+  <polygon points="61,92 67,92 64,95" fill="#d84a7e"/>
+  <path d="M64 95 Q61 99 58 97 M64 95 Q67 99 70 97" stroke="#d84a7e" stroke-width="1.8" stroke-linecap="round" fill="none"/>
 </svg>

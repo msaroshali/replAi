@@ -14,9 +14,22 @@
 
   const brandMark = `
     <svg class="smartreply-mark" viewBox="0 0 24 24" aria-hidden="true">
-      <rect class="smartreply-mark-bg" x="1" y="1" width="22" height="22" rx="6"/>
-      <path d="M15.9 7.1H9.2a3.7 3.7 0 0 0-3.7 3.7v2.4a3.7 3.7 0 0 0 3.7 3.7h1.4l-2.1 2v-2H8.2" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M9 10h6M9 13h4.4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+      <rect class="smartreply-mark-bg" x="1" y="1" width="22" height="22" rx="5.5"/>
+      <!-- Left Ear -->
+      <path d="M8.2 15 C5.8 11 5.1 5.3 7.9 3 C9 2.2 10.1 3 10.5 4.7 C11 7.8 10.5 12.2 9.8 15 Z" fill="#fff"/>
+      <path d="M8.4 14 C7 11 6.7 6.4 8.3 4.3 C8.8 3.8 9.4 4.3 9.6 5.3 C9.9 7.5 9.5 11.5 9 14 Z" fill="#ffb8d1"/>
+      <!-- Right Ear -->
+      <path d="M14.2 15 C13.5 12.2 13 7.8 13.5 4.7 C13.9 3 15 2.2 16.1 3 C18.9 5.3 18.2 11 15.8 15 Z" fill="#fff"/>
+      <path d="M15 14 C14.5 11.5 14.1 7.5 14.4 5.3 C14.6 4.3 15.2 3.8 15.7 4.3 C17.3 6.4 17 11 15.6 14 Z" fill="#ffb8d1"/>
+      <!-- Head -->
+      <ellipse cx="12" cy="17.5" rx="5.5" ry="4" fill="#fff"/>
+      <!-- Eyes -->
+      <ellipse cx="10.3" cy="17" rx="0.7" ry="0.8" fill="#441424"/>
+      <circle cx="10.1" cy="16.7" r="0.25" fill="#fff"/>
+      <ellipse cx="13.7" cy="17" rx="0.7" ry="0.8" fill="#441424"/>
+      <circle cx="13.5" cy="16.7" r="0.25" fill="#fff"/>
+      <!-- Nose -->
+      <polygon points="11.5,18.3 12.5,18.3 12,18.8" fill="#d84a7e"/>
     </svg>`;
 
   function getLocalSettings(keys, callback) {

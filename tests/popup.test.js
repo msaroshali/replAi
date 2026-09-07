@@ -13,7 +13,7 @@ test('popup.html defines accessible dialog roles and titles on both drawers', ()
   assert.match(popupHtml, /<h2 id="settingsDrawerTitle">Preferences &amp; Models<\/h2>/);
 
   assert.match(popupHtml, /id="helpPanel"[^>]*role="dialog"[^>]*aria-modal="true"[^>]*aria-labelledby="helpDrawerTitle"/);
-  assert.match(popupHtml, /<h2 id="helpDrawerTitle">How to Use SmartReply<\/h2>/);
+  assert.match(popupHtml, /<h2 id="helpDrawerTitle">How to Use bunnyReplai<\/h2>/);
 });
 
 test('popup.html includes persistent debug warning banner and two-tier debug settings', () => {

@@ -1,12 +1,12 @@
 const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 const SUPPORTED_MODELS = new Set([
   'gemini-3.5-flash-lite',
+  'gemini-3.8-flash',
   'gemini-3.7-flash',
   'gemini-3.6-flash',
   'gemini-3.5-flash',
-  'gemini-3.1-flash-lite',
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-flash'
+  'gemini-3-flash-preview',
+  'gemini-3.1-flash-lite'
 ]);
 const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modelSelect.value = SUPPORTED_MODELS.has(saved.selectedModel) ? saved.selectedModel : DEFAULT_MODEL;
     emojiCheckbox.checked = saved.useEmoji === true;
     consentCheckbox.checked = saved.privacyConsentAccepted === true;
-    colorThemeSelect.value = saved.colorTheme === 'rose' ? 'rose' : 'teal';
+    colorThemeSelect.value = saved.colorTheme === 'teal' ? 'teal' : 'rose';
     appearanceModeSelect.value = ['light', 'dark', 'system'].includes(saved.appearanceMode) ? saved.appearanceMode : 'system';
     debugCheckbox.checked = saved.debugMode === true;
     if (debugFullContentCheckbox) debugFullContentCheckbox.checked = saved.debugFullContent === true;
@@ -260,11 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
       updateStatus();
 
       if (!settings.privacyConsentAccepted) {
-        showToast('Settings saved. SmartReply is paused until data sharing is enabled.');
+        showToast('Settings saved. bunnyReplai is paused until data sharing is enabled.');
       } else if (!settings.geminiApiKey) {
         showToast('Preferences saved. Add a Gemini key to start.');
       } else if (keyIsVerified) {
-        showToast('Settings saved. SmartReply is ready.');
+        showToast('Settings saved. bunnyReplai is ready.');
       } else {
         showToast('Settings saved. The key still needs a successful check.');
       }
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function saveDrawerSettings(showFeedback = false) {
     const drawerSettings = {
-      colorTheme: colorThemeSelect.value === 'rose' ? 'rose' : 'teal',
+      colorTheme: colorThemeSelect.value === 'teal' ? 'teal' : 'rose',
       appearanceMode: ['light', 'dark', 'system'].includes(appearanceModeSelect.value) ? appearanceModeSelect.value : 'system',
       selectedModel: modelSelect.value || DEFAULT_MODEL,
       debugMode: debugCheckbox.checked,
@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function applyAppearance() {
-    const theme = colorThemeSelect.value === 'rose' ? 'rose' : 'teal';
+    const theme = colorThemeSelect.value === 'teal' ? 'teal' : 'rose';
     const preference = ['light', 'dark', 'system'].includes(appearanceModeSelect.value)
       ? appearanceModeSelect.value
       : 'system';
