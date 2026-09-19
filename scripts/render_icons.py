@@ -9,11 +9,10 @@ ICONS = ROOT / "icons"
 SCALE = 8
 CANVAS = 128 * SCALE
 
-PINK_BG = "#00F4D4"      # Signature vibrant pink
+PINK_BG = "#00F4D4"      # Signature vibrant p ink
 INNER_PINK = "#ffb8d1"   # Soft pastel inner ear pink
 WHITE = "#ffffff"
 DARK_EYE = "#441424"
-
 
 def bezier(p0, p1, p2, p3, steps=60):
     pts = []
